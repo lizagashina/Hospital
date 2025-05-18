@@ -9,32 +9,109 @@
     </div>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ФИО</th>
-            <th>Отделение</th>
-            <th>Палата</th>
-            <th>Состояние</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for patient in patients %}
-        <tr>
-            <td>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</td>
-            <td>{{ patient.department.name }}</td>
-            <td>{{ patient.room_number }}</td>
-            <td>{{ patient.get_severity_display }}</td>
-            <td>
-                <a href="{% url 'patient_detail' patient.id %}" class="btn btn-sm btn-info">Карточка</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">Нет активных пациентов</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- Кнопка для отображения панели поиска -->
+<button class="btn btn-info mb-3" type="button" data-toggle="collapse" data-target="#searchPanel">
+    Поиск пациентов
+</button>
+
+<!-- Панель поиска -->
+<div class="collapse mb-4" id="searchPanel">
+    <div class="card card-body">
+        <form method="get" class="form">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="last_name">Фамилия</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name"
+                               value="{{ search_params.last_name }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="first_name">Имя</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name"
+                               value="{{ search_params.first_name }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="middle_name">Отчество</label>
+                        <input type="text" class="form-control" id="middle_name" name="middle_name"
+                               value="{{ search_params.middle_name }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="snils">СНИЛС</label>
+                        <input type="text" class="form-control" id="snils" name="snils"
+                               placeholder="123-456-789 01" value="{{ search_params.snils }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="birth_date">Дата рождения</label>
+                        <input type="date" class="form-control" id="birth_date" name="birth_date"
+                               value="{{ search_params.birth_date }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary">Искать</button>
+                <a href="{% url 'patients' %}" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Таблица результатов -->
+{% if search_performed %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ФИО</th>
+                <th>СНИЛС</th>
+                <th>Дата рождения</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if patients.exists %}
+                {% for patient in patients %}
+                <tr>
+                    <td>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</td>
+                    <td>{{ patient.formatted_snils }}</td>
+                    <td>{{ patient.birth_date|date:"d.m.Y" }}</td>
+                    <td>
+                        {% if patient.discharged %}
+                            <span class="badge badge-secondary">Выписан</span>
+                        {% else %}
+                            <span class="badge badge-success">В стационаре</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'patient_detail' patient.id %}" class="btn btn-sm btn-info">
+                            Карточка
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">Пациенты не найдены</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Введите параметры поиска и нажмите "Искать" для отображения списка пациентов
+</div>
+{% endif %}
 {% endblock %}

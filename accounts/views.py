@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.utils import timezone
+from django.db.models import Q
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientForm
 from .models import Patient, Department
@@ -49,8 +50,35 @@ def department_view(request, department_id):
 
 @login_required
 def patients_view(request):
-    patients = Patient.objects.filter(discharged=False)
-    return render(request, 'accounts/patients.html', {'patients': patients})
+    patients = Patient.objects.none()  # Пустой queryset по умолчанию
+    search_performed = False
+
+    if request.method == 'GET' and any(
+            param in request.GET for param in ['last_name', 'first_name', 'middle_name', 'snils', 'birth_date']):
+        search_performed = True
+        patients = Patient.objects.all().order_by('-admission_date')
+
+        # Обработка параметров поиска
+        search_query = {}
+        if last_name := request.GET.get('last_name'):
+            search_query['last_name__icontains'] = last_name
+        if first_name := request.GET.get('first_name'):
+            search_query['first_name__icontains'] = first_name
+        if middle_name := request.GET.get('middle_name'):
+            search_query['middle_name__icontains'] = middle_name
+        if snils := request.GET.get('snils'):
+            search_query['snils__icontains'] = snils.replace('-', '').replace(' ', '')
+        if birth_date := request.GET.get('birth_date'):
+            search_query['birth_date'] = birth_date
+
+        if search_query:
+            patients = patients.filter(**search_query)
+
+    return render(request, 'accounts/patients.html', {
+        'patients': patients,
+        'search_params': request.GET,
+        'search_performed': search_performed
+    })
 
 @login_required
 def add_patient_view(request):
