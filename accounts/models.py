@@ -61,6 +61,10 @@ class Patient(models.Model):
         ('moderate', 'Средней тяжести'),
         ('severe', 'Тяжёлое'),
     ]
+    GENDER_CHOICES = [
+        ('M', 'Мужской'),
+        ('F', 'Женский'),
+    ]
 
     # Основные данные
     last_name = models.CharField(max_length=50, verbose_name='Фамилия')
@@ -73,6 +77,11 @@ class Patient(models.Model):
         unique=True,
         verbose_name='СНИЛС',
         help_text='Формат: XXX-XXX-XXX XX'
+    )
+    gender = models.CharField(
+        max_length=1,
+        choices=GENDER_CHOICES,
+        verbose_name='Пол'
     )
 
     def clean(self):

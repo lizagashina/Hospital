@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
@@ -29,6 +31,11 @@ class PatientForm(forms.ModelForm):
         help_text='Формат: XXX-XXX-XXX XX',
         widget=forms.TextInput(attrs={'placeholder': '123-456-789 01'})
     )
+    gender = forms.ChoiceField(
+        choices=Patient.GENDER_CHOICES,
+        label='Пол',
+        widget=forms.RadioSelect
+    )
 
     def clean_snils(self):
         snils = self.cleaned_data.get('snils', '')
@@ -40,7 +47,7 @@ class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
         fields = [
-            'last_name', 'first_name', 'middle_name',
+            'last_name', 'first_name', 'middle_name', 'gender',
             'birth_date', 'birth_place', 'snils',
             'height', 'weight', 'severity',
             'diagnosis', 'temperature', 'room_number',
