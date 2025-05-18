@@ -1,0 +1,63 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Карточка пациента: {{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</h2>
+    <a href="{% url 'patients' %}" class="btn btn-secondary">Назад</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">Основные данные</div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Дата рождения:</dt>
+            <dd class="col-sm-9">{{ patient.birth_date }}</dd>
+            
+            <dt class="col-sm-3">Место рождения:</dt>
+            <dd class="col-sm-9">{{ patient.birth_place|default:"Не указано" }}</dd>
+            
+            <dt class="col-sm-3">СНИЛС:</dt>
+            <dd class="col-sm-9">{{ patient.snils }}</dd>
+            
+            <dt class="col-sm-3">Рост/Вес:</dt>
+            <dd class="col-sm-9">{{ patient.height }} см / {{ patient.weight }} кг</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">Данные поступления</div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Отделение:</dt>
+            <dd class="col-sm-9">{{ patient.department.name }}</dd>
+            
+            <dt class="col-sm-3">Палата:</dt>
+            <dd class="col-sm-9">{{ patient.room_number }}</dd>
+            
+            <dt class="col-sm-3">Состояние:</dt>
+            <dd class="col-sm-9">{{ patient.get_severity_display }}</dd>
+            
+            <dt class="col-sm-3">Диагноз:</dt>
+            <dd class="col-sm-9">{{ patient.diagnosis }}</dd>
+            
+            <dt class="col-sm-3">Температура:</dt>
+            <dd class="col-sm-9">{{ patient.temperature }} °C</dd>
+            
+            <dt class="col-sm-3">Дата поступления:</dt>
+            <dd class="col-sm-9">{{ patient.admission_date }}</dd>
+        </dl>
+    </div>
+</div>
+
+{% if not patient.discharged %}
+<form method="post" class="text-right">
+    {% csrf_token %}
+    <button type="submit" name="discharge" class="btn btn-danger">Выписать пациента</button>
+</form>
+{% else %}
+<div class="alert alert-info">
+    Пациент выписан {{ patient.discharge_date }}
+</div>
+{% endif %}
+{% endblock %}

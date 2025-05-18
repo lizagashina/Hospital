@@ -1,0 +1,40 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Работа с пациентами</h2>
+    <div>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Назад</a>
+        <a href="{% url 'add_patient' %}" class="btn btn-primary">Добавить пациента</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Отделение</th>
+            <th>Палата</th>
+            <th>Состояние</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patient in patients %}
+        <tr>
+            <td>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</td>
+            <td>{{ patient.department.name }}</td>
+            <td>{{ patient.room_number }}</td>
+            <td>{{ patient.get_severity_display }}</td>
+            <td>
+                <a href="{% url 'patient_detail' patient.id %}" class="btn btn-sm btn-info">Карточка</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">Нет активных пациентов</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

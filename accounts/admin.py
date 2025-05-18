@@ -1,6 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Department
+from .models import CustomUser, Department, Patient
+
+@admin.register(Patient)
+class PatientAdmin(admin.ModelAdmin):
+    list_display = ('last_name', 'first_name', 'department', 'room_number', 'severity', 'discharged')
+    list_filter = ('department', 'severity', 'discharged')
+    search_fields = ('last_name', 'first_name', 'snils')
+    ordering = ('-admission_date',)
 
 
 class CustomUserAdmin(UserAdmin):

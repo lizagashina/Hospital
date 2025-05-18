@@ -1,21 +1,25 @@
 {% extends 'accounts/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Добро пожаловать, {{ user.full_name }}!</h2>
-    <a href="{% url 'logout' %}" class="btn btn-danger">Выход</a>
-</div>
-
-<h3 class="mb-3">Ваши отделения:</h3>
-{% if departments %}
-    <div class="list-group">
-        {% for department in departments %}
-            <a href="{% url 'department' department.id %}" class="list-group-item list-group-item-action">
-                {{ department.name }} ({{ department.code }})
-            </a>
-        {% endfor %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Добро пожаловать, {{ user.full_name }}!</h2>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Выход</a>
     </div>
-{% else %}
-    <div class="alert alert-info">Вам не назначены отделения</div>
-{% endif %}
+
+    <h3 class="mb-3">Ваши отделения:</h3>
+    {% if departments %}
+        <div class="list-group">
+            {% for department in departments %}
+                <a href="{% url 'department' department.id %}" class="list-group-item list-group-item-action">
+                    {{ department.name }} ({{ department.code }})
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Вам не назначены отделения</div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'patients' %}" class="btn btn-primary btn-lg">Работа с пациентами</a>
+    </div>
 {% endblock %}

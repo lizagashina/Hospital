@@ -49,3 +49,35 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name} ({self.employee_number})"
+
+
+
+class Patient(models.Model):
+    SEVERITY_CHOICES = [
+        ('mild', 'Удовлетворительное'),
+        ('moderate', 'Средней тяжести'),
+        ('severe', 'Тяжёлое'),
+    ]
+
+    # Основные данные
+    last_name = models.CharField(max_length=50, verbose_name='Фамилия')
+    first_name = models.CharField(max_length=50, verbose_name='Имя')
+    middle_name = models.CharField(max_length=50, blank=True, verbose_name='Отчество')
+    birth_date = models.DateField(verbose_name='Дата рождения')
+    birth_place = models.CharField(max_length=100, blank=True, verbose_name='Место рождения')
+    snils = models.CharField(max_length=11, unique=True, verbose_name='СНИЛС')
+    height = models.PositiveSmallIntegerField(verbose_name='Рост (см)')
+    weight = models.PositiveSmallIntegerField(verbose_name='Вес (кг)')
+
+    # Данные поступления
+    admission_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата поступления')
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, verbose_name='Состояние')
+    diagnosis = models.TextField(verbose_name='Диагноз')
+    temperature = models.DecimalField(max_digits=3, decimal_places=1, verbose_name='Температура')
+    room_number = models.CharField(max_length=10, verbose_name='Номер палаты')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name='Отделение')
+    discharged = models.BooleanField(default=False, verbose_name='Выписан')
+    discharge_date = models.DateTimeField(null=True, blank=True, verbose_name='Дата выписки')
+
+    def __str__(self):
+        return f"{self.last_name} {self.first_name} {self.middle_name}"
