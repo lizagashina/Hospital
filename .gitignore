@@ -1,0 +1,4 @@
+/HospitalJournal/migrations/
+/accounts/migrations/
+db.sqlite3
+/.venv/
