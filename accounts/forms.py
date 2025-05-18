@@ -23,6 +23,20 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class PatientForm(forms.ModelForm):
+    snils = forms.CharField(
+        max_length=14,
+        label='СНИЛС',
+        help_text='Формат: XXX-XXX-XXX XX',
+        widget=forms.TextInput(attrs={'placeholder': '123-456-789 01'})
+    )
+
+    def clean_snils(self):
+        snils = self.cleaned_data.get('snils', '')
+        # Проверка формата при вводе
+        if not re.match(r'^\d{3}-\d{3}-\d{3} \d{2}$', snils):
+            raise forms.ValidationError('Введите СНИЛС в формате XXX-XXX-XXX XX')
+        return re.sub(r'[^\d]', '', snils)
+
     class Meta:
         model = Patient
         fields = [

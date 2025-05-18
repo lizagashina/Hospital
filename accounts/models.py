@@ -1,3 +1,6 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -65,7 +68,29 @@ class Patient(models.Model):
     middle_name = models.CharField(max_length=50, blank=True, verbose_name='Отчество')
     birth_date = models.DateField(verbose_name='Дата рождения')
     birth_place = models.CharField(max_length=100, blank=True, verbose_name='Место рождения')
-    snils = models.CharField(max_length=11, unique=True, verbose_name='СНИЛС')
+    snils = models.CharField(
+        max_length=14,
+        unique=True,
+        verbose_name='СНИЛС',
+        help_text='Формат: XXX-XXX-XXX XX'
+    )
+
+    def clean(self):
+        super().clean()
+        # Очищаем СНИЛС от всех символов, кроме цифр
+        if self.snils:
+            cleaned_snils = re.sub(r'[^\d]', '', self.snils)
+            if len(cleaned_snils) != 11:
+                raise ValidationError({'snils': 'СНИЛС должен содержать 11 цифр'})
+            self.snils = cleaned_snils
+
+    def formatted_snils(self):
+        """Метод для отображения СНИЛС в стандартном формате"""
+        if len(self.snils) == 11:
+            return f"{self.snils[:3]}-{self.snils[3:6]}-{self.snils[6:9]} {self.snils[9:]}"
+        return self.snils
+
+
     height = models.PositiveSmallIntegerField(verbose_name='Рост (см)')
     weight = models.PositiveSmallIntegerField(verbose_name='Вес (кг)')
 
