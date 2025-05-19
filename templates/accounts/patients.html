@@ -81,17 +81,17 @@
             </tr>
         </thead>
         <tbody>
-            {% if patients.exists %}
+            {% if patients %}
                 {% for patient in patients %}
                 <tr>
                     <td>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</td>
                     <td>{{ patient.formatted_snils }}</td>
                     <td>{{ patient.birth_date|date:"d.m.Y" }}</td>
                     <td>
-                        {% if patient.discharged %}
-                            <span class="badge badge-secondary">Выписан</span>
-                        {% else %}
+                        {% if patient.has_active_admission %}
                             <span class="badge badge-success">В стационаре</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Выписан</span>
                         {% endif %}
                     </td>
                     <td>

@@ -2,10 +2,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.utils import timezone
+from django.db.models import Max
 from django.db.models import Q
 
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientForm
-from .models import Patient, Department
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientForm, AdmissionForm
+from .models import Patient, Department, Admission
 
 def register_view(request):
     if request.method == 'POST':
@@ -50,16 +51,17 @@ def department_view(request, department_id):
 
 @login_required
 def patients_view(request):
-    patients = Patient.objects.none()  # Пустой queryset по умолчанию
+    patients = Patient.objects.annotate(
+        last_admission_date=Max('admissions__admission_date')
+    ).order_by('-last_admission_date')
+
     search_performed = False
 
     if request.method == 'GET' and any(
             param in request.GET for param in ['last_name', 'first_name', 'middle_name', 'snils', 'birth_date']):
         search_performed = True
-        patients = Patient.objects.all().order_by('-admission_date')
-
-        # Обработка параметров поиска
         search_query = {}
+
         if last_name := request.GET.get('last_name'):
             search_query['last_name__icontains'] = last_name
         if first_name := request.GET.get('first_name'):
@@ -83,20 +85,49 @@ def patients_view(request):
 @login_required
 def add_patient_view(request):
     if request.method == 'POST':
-        form = PatientForm(request.POST)
-        if form.is_valid():
-            form.save()
+        patient_form = PatientForm(request.POST)
+        admission_form = AdmissionForm(request.POST)
+
+        if patient_form.is_valid() and admission_form.is_valid():
+            patient = patient_form.save()
+            admission = admission_form.save(commit=False)
+            admission.patient = patient
+            admission.save()
             return redirect('patients')
     else:
-        form = PatientForm()
-    return render(request, 'accounts/add_patient.html', {'form': form})
+        patient_form = PatientForm()
+        admission_form = AdmissionForm()
+
+    return render(request, 'accounts/add_patient.html', {
+        'patient_form': patient_form,
+        'admission_form': admission_form,
+    })
+
 
 @login_required
 def patient_detail_view(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
-    if request.method == 'POST' and 'discharge' in request.POST:
-        patient.discharged = True
-        patient.discharge_date = timezone.now()
-        patient.save()
-        return redirect('patients')
-    return render(request, 'accounts/patient_detail.html', {'patient': patient})
+    active_admission = patient.admissions.filter(discharge_date__isnull=True).first()
+    past_admissions = patient.admissions.filter(discharge_date__isnull=False).order_by('-admission_date')
+
+    return render(request, 'accounts/patient_detail.html', {
+        'patient': patient,
+        'active_admission': active_admission,
+        'past_admissions': past_admissions
+    })
+
+
+@login_required
+def admission_detail_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id)
+    return render(request, 'accounts/admission_detail.html', {'admission': admission})
+
+
+@login_required
+def discharge_patient_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id, discharge_date__isnull=True)
+    if request.method == 'POST':
+        admission.discharge_date = timezone.now()
+        admission.save()
+        return redirect('patient_detail', patient_id=admission.patient.id)
+    return redirect('admission_detail', admission_id=admission_id)

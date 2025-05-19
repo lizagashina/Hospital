@@ -1,0 +1,35 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
+    <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-secondary">Назад к пациенту</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Данные пациента</div>
+            <div class="card-body">
+                {% include 'accounts/patient_basic_info.html' with patient=admission.patient %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Детали поступления</div>
+            <div class="card-body">
+                {% include 'accounts/admission_card.html' %}
+                
+                {% if admission.is_active %}
+                <form method="post" action="{% url 'discharge_patient' admission.id %}" class="text-right mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Выписать пациента</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

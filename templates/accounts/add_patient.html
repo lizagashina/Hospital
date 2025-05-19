@@ -12,18 +12,18 @@
         <div class="card mb-4">
             <div class="card-header">Основные данные</div>
             <div class="card-body">
-                {{ form.last_name|as_crispy_field }}
-                {{ form.first_name|as_crispy_field }}
-                {{ form.middle_name|as_crispy_field }}
-                {{ form.birth_date|as_crispy_field }}
-                {{ form.birth_place|as_crispy_field }}
-                {{ form.snils|as_crispy_field }}
-                {{ form.height|as_crispy_field }}
-                {{ form.weight|as_crispy_field }}
+                {{ patient_form.last_name|as_crispy_field }}
+                {{ patient_form.first_name|as_crispy_field }}
+                {{ patient_form.middle_name|as_crispy_field }}
+                {{ patient_form.birth_date|as_crispy_field }}
+                {{ patient_form.birth_place|as_crispy_field }}
+                {{ patient_form.snils|as_crispy_field }}
+                {{ patient_form.height|as_crispy_field }}
+                {{ patient_form.weight|as_crispy_field }}
                 <div class="form-group">
                     <label>Пол</label>
                     <div>
-                        {% for choice in form.gender %}
+                        {% for choice in patient_form.gender %}
                             <div class="form-check form-check-inline">
                                 {{ choice.tag }}
                                 <label class="form-check-label" for="{{ choice.id_for_label }}">
@@ -39,11 +39,11 @@
         <div class="card mb-4">
             <div class="card-header">Данные поступления</div>
             <div class="card-body">
-                {{ form.department|as_crispy_field }}
-                {{ form.severity|as_crispy_field }}
-                {{ form.diagnosis|as_crispy_field }}
-                {{ form.temperature|as_crispy_field }}
-                {{ form.room_number|as_crispy_field }}
+                {{ admission_form.department|as_crispy_field }}
+                {{ admission_form.severity|as_crispy_field }}
+                {{ admission_form.diagnosis|as_crispy_field }}
+                {{ admission_form.temperature|as_crispy_field }}
+                {{ admission_form.room_number|as_crispy_field }}
             </div>
         </div>
 

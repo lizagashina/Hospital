@@ -3,7 +3,7 @@ import re
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Patient, Department
+from .models import CustomUser, Patient, Department, Admission
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -22,6 +22,17 @@ class CustomAuthenticationForm(AuthenticationForm):
         label='Номер сотрудника или логин',
         widget=forms.TextInput(attrs={'autofocus': True})
     )
+
+
+class AdmissionForm(forms.ModelForm):
+    class Meta:
+        model = Admission
+        fields = ['severity', 'diagnosis', 'temperature', 'room_number', 'department', 'notes']
+        widgets = {
+            'admission_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'discharge_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'department': forms.Select(attrs={'class': 'form-control'}),
+        }
 
 
 class PatientForm(forms.ModelForm):
@@ -49,11 +60,8 @@ class PatientForm(forms.ModelForm):
         fields = [
             'last_name', 'first_name', 'middle_name', 'gender',
             'birth_date', 'birth_place', 'snils',
-            'height', 'weight', 'severity',
-            'diagnosis', 'temperature', 'room_number',
-            'department'
+            'height', 'weight'
         ]
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
-            'department': forms.Select(attrs={'class': 'form-control'}),
         }
