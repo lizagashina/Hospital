@@ -12,6 +12,12 @@ class Department(models.Model):
     code = models.CharField(max_length=10, unique=True, verbose_name='Код отделения')
     description = models.TextField(blank=True, verbose_name='Описание')
 
+    def get_current_patients(self):
+        return Patient.objects.filter(
+            admissions__department=self,
+            admissions__discharge_date__isnull=True
+        ).distinct()
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 

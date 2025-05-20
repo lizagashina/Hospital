@@ -1,108 +1,114 @@
 {% extends 'accounts/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Карточка пациента: {{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</h2>
-    <div>
-        <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
-        {% if past_admissions.exists %}
-            <a href="#admissions-archive" class="btn btn-info ml-2">Архив</a>
-        {% endif %}
-    </div>
-</div>
-{% if not active_admission %}
-<div class="text-right mb-3">
-    <a href="{% url 'add_admission' patient.id %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Новое поступление
-    </a>
-</div>
-{% endif %}
-<!-- Основная информация о пациенте -->
-<div class="card mb-4">
-    <div class="card-header">Основные данные</div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">ФИО:</dt>
-            <dd class="col-sm-9">{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</dd>
-
-            <dt class="col-sm-3">Дата рождения:</dt>
-            <dd class="col-sm-9">{{ patient.birth_date|date:"d.m.Y" }}</dd>
-
-            <dt class="col-sm-3">Пол:</dt>
-            <dd class="col-sm-9">
-                {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не указан{% endif %}
-            </dd>
-
-            <dt class="col-sm-3">СНИЛС:</dt>
-            <dd class="col-sm-9">{{ patient.formatted_snils }}</dd>
-
-            <dt class="col-sm-3">Рост/Вес:</dt>
-            <dd class="col-sm-9">{{ patient.height }} см / {{ patient.weight }} кг</dd>
-
-            <dt class="col-sm-3">Место рождения:</dt>
-            <dd class="col-sm-9">{{ patient.birth_place|default:"Не указано" }}</dd>
-        </dl>
-    </div>
-</div>
-
-<!-- Текущее поступление -->
-{% if active_admission %}
-<div class="card mb-4">
-    <div class="card-header">Текущее поступление</div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Отделение:</dt>
-            <dd class="col-sm-9">{{ active_admission.department.name }}</dd>
-
-            <dt class="col-sm-3">Палата:</dt>
-            <dd class="col-sm-9">{{ active_admission.room_number }}</dd>
-
-            <dt class="col-sm-3">Дата поступления:</dt>
-            <dd class="col-sm-9">{{ active_admission.admission_date|date:"d.m.Y H:i" }}</dd>
-
-            <dt class="col-sm-3">Состояние:</dt>
-            <dd class="col-sm-9">{{ active_admission.get_severity_display }}</dd>
-
-            <dt class="col-sm-3">Диагноз:</dt>
-            <dd class="col-sm-9">{{ active_admission.diagnosis }}</dd>
-
-            <dt class="col-sm-3">Температура:</dt>
-            <dd class="col-sm-9">{{ active_admission.temperature }} °C</dd>
-
-            <dt class="col-sm-3">Примечания:</dt>
-            <dd class="col-sm-9">{{ active_admission.notes|default:"Нет примечаний" }}</dd>
-        </dl>
-
-        <form method="post" action="{% url 'discharge_patient' active_admission.id %}" class="text-right mt-3">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Выписать пациента</button>
-        </form>
-    </div>
-</div>
-{% endif %}
-
-<!-- Архив поступлений -->
-{% if past_admissions.exists %}
-<div id="admissions-archive" class="card mb-4">
-    <div class="card-header">История поступлений</div>
-    <div class="card-body">
-        <div class="list-group">
-            {% for admission in past_admissions %}
-            <a href="{% url 'admission_detail' admission.id %}" class="list-group-item list-group-item-action">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <strong>{{ admission.admission_date|date:"d.m.Y" }}</strong> -
-                        {{ admission.discharge_date|date:"d.m.Y"|default:"не выписан" }}
-                    </div>
-                    <div>
-                        {{ admission.department.name }} ({{ admission.room_number }})
-                    </div>
-                </div>
-                <div class="text-muted mt-1">{{ admission.diagnosis|truncatechars:50 }}</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Карточка пациента: {{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</h2>
+        <div>
+            <a href="{% url 'department' active_admission.department.id %}"
+               class="btn btn-outline-secondary">
+                ← Назад в отделение
             </a>
-            {% endfor %}
+            <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
+            {% if past_admissions.exists %}
+                <a href="#admissions-archive" class="btn btn-info ml-2">Архив</a>
+            {% endif %}
         </div>
     </div>
-</div>
-{% endif %}
+    {% if not active_admission %}
+        <div class="text-right mb-3">
+            <a href="{% url 'add_admission' patient.id %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Новое поступление
+            </a>
+        </div>
+    {% endif %}
+    <!-- Основная информация о пациенте -->
+    <div class="card mb-4">
+        <div class="card-header">Основные данные</div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ФИО:</dt>
+                <dd class="col-sm-9">{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</dd>
+
+                <dt class="col-sm-3">Дата рождения:</dt>
+                <dd class="col-sm-9">{{ patient.birth_date|date:"d.m.Y" }}</dd>
+
+                <dt class="col-sm-3">Пол:</dt>
+                <dd class="col-sm-9">
+                    {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не
+                        указан{% endif %}
+                </dd>
+
+                <dt class="col-sm-3">СНИЛС:</dt>
+                <dd class="col-sm-9">{{ patient.formatted_snils }}</dd>
+
+                <dt class="col-sm-3">Рост/Вес:</dt>
+                <dd class="col-sm-9">{{ patient.height }} см / {{ patient.weight }} кг</dd>
+
+                <dt class="col-sm-3">Место рождения:</dt>
+                <dd class="col-sm-9">{{ patient.birth_place|default:"Не указано" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Текущее поступление -->
+    {% if active_admission %}
+        <div class="card mb-4">
+            <div class="card-header">Текущее поступление</div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Отделение:</dt>
+                    <dd class="col-sm-9">{{ active_admission.department.name }}</dd>
+
+                    <dt class="col-sm-3">Палата:</dt>
+                    <dd class="col-sm-9">{{ active_admission.room_number }}</dd>
+
+                    <dt class="col-sm-3">Дата поступления:</dt>
+                    <dd class="col-sm-9">{{ active_admission.admission_date|date:"d.m.Y H:i" }}</dd>
+
+                    <dt class="col-sm-3">Состояние:</dt>
+                    <dd class="col-sm-9">{{ active_admission.get_severity_display }}</dd>
+
+                    <dt class="col-sm-3">Диагноз:</dt>
+                    <dd class="col-sm-9">{{ active_admission.diagnosis }}</dd>
+
+                    <dt class="col-sm-3">Температура:</dt>
+                    <dd class="col-sm-9">{{ active_admission.temperature }} °C</dd>
+
+                    <dt class="col-sm-3">Примечания:</dt>
+                    <dd class="col-sm-9">{{ active_admission.notes|default:"Нет примечаний" }}</dd>
+                </dl>
+
+                <form method="post" action="{% url 'discharge_patient' active_admission.id %}" class="text-right mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Выписать пациента</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Архив поступлений -->
+    {% if past_admissions.exists %}
+        <div id="admissions-archive" class="card mb-4">
+            <div class="card-header">История поступлений</div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for admission in past_admissions %}
+                        <a href="{% url 'admission_detail' admission.id %}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ admission.admission_date|date:"d.m.Y" }}</strong> -
+                                    {{ admission.discharge_date|date:"d.m.Y"|default:"не выписан" }}
+                                </div>
+                                <div>
+                                    {{ admission.department.name }} ({{ admission.room_number }})
+                                </div>
+                            </div>
+                            <div class="text-muted mt-1">{{ admission.diagnosis|truncatechars:50 }}</div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

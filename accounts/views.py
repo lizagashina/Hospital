@@ -85,10 +85,14 @@ def home_view(request):
 @login_required
 def department_view(request, department_id):
     department = get_object_or_404(Department, id=department_id)
+    patients = department.get_current_patients()
     # Проверяем, что пользователь имеет доступ к этому отделению
     if not request.user.departments.filter(id=department_id).exists():
         return redirect('home')
-    return render(request, 'accounts/department.html', {'department': department})
+    return render(request, 'accounts/department.html', {
+        'department': department,
+        'patients': patients
+    })
 
 
 @login_required

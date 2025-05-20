@@ -7,10 +7,32 @@
 </div>
 
 <div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Код: {{ department.code }}</h5>
-        {% if department.description %}
-            <p class="card-text">{{ department.description }}</p>
+    <div class="card-header">Пациенты в отделении</div>
+    <div class="card-body p-0">
+        {% if patients %}
+        <div class="list-group list-group-flush">
+            {% for patient in patients %}
+            <a href="{% url 'patient_detail' patient.id %}"
+               class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</strong>
+                        <div class="text-muted small">
+                            СНИЛС: {{ patient.formatted_snils }} |
+                            Возраст: {{ patient.birth_date|timesince }}
+                        </div>
+                    </div>
+                    <span class="badge badge-primary">
+                        Палата: {{ patient.admissions.first.room_number }}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            В отделении нет пациентов
+        </div>
         {% endif %}
     </div>
 </div>
