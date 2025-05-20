@@ -14,7 +14,18 @@
             <div class="card-body">
                 {{ admission_form.department|as_crispy_field }}
                 {{ admission_form.severity|as_crispy_field }}
-                {{ admission_form.diagnosis|as_crispy_field }}
+                <div class="form-group">
+                    <label for="diagnosis">Диагноз</label>
+                    <div class="input-group">
+                        <input type="text" name="diagnosis" class="form-control" id="diagnosis" required>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    onclick="window.open('{% url 'mkb10_search' %}', 'mkb_search', 'width=800,height=600')">
+                                Поиск МКБ-10
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 {{ admission_form.temperature|as_crispy_field }}
                 {{ admission_form.room_number|as_crispy_field }}
             </div>
@@ -22,4 +33,12 @@
 
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </form>
+
+    <script>
+        window.addEventListener('message', function (e) {
+            if (e.data.mkb_code && e.data.mkb_name) {
+                document.getElementById('diagnosis').value = `${e.data.mkb_code} ${e.data.mkb_name}`;
+            }
+        });
+    </script>
 {% endblock %}

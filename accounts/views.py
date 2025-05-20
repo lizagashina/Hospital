@@ -1,13 +1,51 @@
+import requests
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.utils import timezone
 from django.db.models import Max
 from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCreateForm, AdmissionCreateForm
 from .models import Patient, Department, Admission
 
+
+
+
+
+@login_required
+def mkb10_search_view(request):
+    if not settings.GIGDATA_API_KEY:
+        raise ValueError("API key not configured")
+    if request.method == 'POST':
+        query = request.POST.get('query', '')
+
+        headers = {
+            'Authorization': settings.GIGDATA_API_KEY,
+            'Accept': 'application/json'
+        }
+
+        payload = {
+            "query": query,
+            "count": 100
+        }
+
+        try:
+            response = requests.post(
+                'https://api.gigdata.ru/api/v2/suggest/mkb',
+                headers=headers,
+                json=payload
+            )
+            response.raise_for_status()
+            data = response.json()
+            return JsonResponse(data)
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return render(request, 'accounts/mkb10_search.html')
 
 def register_view(request):
     if request.method == 'POST':
