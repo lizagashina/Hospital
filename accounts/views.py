@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.db.models import Max
 from django.db.models import Q
 
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientForm, AdmissionForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCreateForm, AdmissionCreateForm
 from .models import Patient, Department, Admission
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -19,6 +20,7 @@ def register_view(request):
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
 
+
 def login_view(request):
     if request.method == 'POST':
         form = CustomAuthenticationForm(data=request.POST)
@@ -30,6 +32,7 @@ def login_view(request):
         form = CustomAuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -39,6 +42,7 @@ def logout_view(request):
 def home_view(request):
     user_departments = request.user.departments.all()
     return render(request, 'accounts/home.html', {'departments': user_departments})
+
 
 @login_required
 def department_view(request, department_id):
@@ -82,25 +86,38 @@ def patients_view(request):
         'search_performed': search_performed
     })
 
+
 @login_required
 def add_patient_view(request):
     if request.method == 'POST':
-        patient_form = PatientForm(request.POST)
-        admission_form = AdmissionForm(request.POST)
-
-        if patient_form.is_valid() and admission_form.is_valid():
+        patient_form = PatientCreateForm(request.POST)
+        if patient_form.is_valid():
             patient = patient_form.save()
+            return redirect('add_admission', patient_id=patient.id)
+    else:
+        patient_form = PatientCreateForm()
+
+    return render(request, 'accounts/add_patient.html', {'patient_form': patient_form})
+
+
+@login_required
+def add_admission_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+
+    if request.method == 'POST':
+        admission_form = AdmissionCreateForm(request.POST)
+        if admission_form.is_valid():
             admission = admission_form.save(commit=False)
             admission.patient = patient
             admission.save()
-            return redirect('patients')
+            return redirect('patient_detail', patient_id=patient.id)
     else:
-        patient_form = PatientForm()
-        admission_form = AdmissionForm()
+        admission_form = AdmissionCreateForm()
 
-    return render(request, 'accounts/add_patient.html', {
-        'patient_form': patient_form,
+    return render(request, 'accounts/add_admission.html', {
         'admission_form': admission_form,
+        'patient': patient,
+        'is_existing_patient': True  # Флаг для изменения заголовка
     })
 
 

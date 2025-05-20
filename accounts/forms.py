@@ -24,10 +24,13 @@ class CustomAuthenticationForm(AuthenticationForm):
     )
 
 
-class AdmissionForm(forms.ModelForm):
+class AdmissionCreateForm(forms.ModelForm):
     class Meta:
         model = Admission
-        fields = ['severity', 'diagnosis', 'temperature', 'room_number', 'department', 'notes']
+        fields = [
+            'severity', 'diagnosis', 'temperature',
+            'room_number', 'department', 'notes'
+        ]
         widgets = {
             'admission_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'discharge_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -35,7 +38,8 @@ class AdmissionForm(forms.ModelForm):
         }
 
 
-class PatientForm(forms.ModelForm):
+
+class PatientCreateForm(forms.ModelForm):
     snils = forms.CharField(
         max_length=14,
         label='СНИЛС',

@@ -1,0 +1,25 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Добавление пациента</h2>
+        <a href="{% url 'patients' %}" class="btn btn-secondary">Назад</a>
+    </div>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-header">Данные поступления</div>
+            <div class="card-body">
+                {{ admission_form.department|as_crispy_field }}
+                {{ admission_form.severity|as_crispy_field }}
+                {{ admission_form.diagnosis|as_crispy_field }}
+                {{ admission_form.temperature|as_crispy_field }}
+                {{ admission_form.room_number|as_crispy_field }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+{% endblock %}
