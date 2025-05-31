@@ -7,7 +7,21 @@ from django.core.validators import RegexValidator
 from django.utils.text import slugify
 
 
+class Hospital(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Название больницы')
+    address = models.TextField(verbose_name='Адрес')
+
+    def __str__(self):
+        return self.name
+
+
 class Department(models.Model):
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.CASCADE,
+        verbose_name='Больница',
+        related_name='hospital_departments'
+    )
     name = models.CharField(max_length=100, verbose_name='Название отделения')
     code = models.CharField(max_length=10, unique=True, verbose_name='Код отделения')
     description = models.TextField(blank=True, verbose_name='Описание')
@@ -15,8 +29,12 @@ class Department(models.Model):
     def get_current_patients(self):
         return Patient.objects.filter(
             admissions__department=self,
-            admissions__discharge_date__isnull=True
+            admissions__discharge_date__isnull=True,
+            hospital = self.hospital  # Добавляем фильтр по больнице
         ).distinct()
+
+    class Meta:
+        ordering = ['hospital', 'name']  # Правильный ordering
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -35,6 +53,14 @@ class CustomUser(AbstractUser):
         max_length=15,
         verbose_name='Номер телефона',
         validators=[RegexValidator(r'^\+?1?\d{9,15}$', 'Введите корректный номер телефона')]
+    )
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Больница',
+        related_name='employees'
     )
 
     # Убираем username из обязательных полей
@@ -56,12 +82,21 @@ class CustomUser(AbstractUser):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        ordering = ['hospital', 'full_name']  # Правильный ordering
+
     def __str__(self):
         return f"{self.full_name} ({self.employee_number})"
 
 
 
 class Patient(models.Model):
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.CASCADE,
+        verbose_name='Больница',
+        related_name='patients'
+    )
     GENDER_CHOICES = [
         ('M', 'Мужской'),
         ('F', 'Женский'),
@@ -75,7 +110,6 @@ class Patient(models.Model):
     birth_place = models.CharField(max_length=100, blank=True, verbose_name='Место рождения')
     snils = models.CharField(
         max_length=14,
-        unique=True,
         verbose_name='СНИЛС',
         help_text='Формат: XXX-XXX-XXX XX'
     )
@@ -110,6 +144,15 @@ class Patient(models.Model):
 
     def __str__(self):
         return f"{self.last_name} {self.first_name} {self.middle_name}"
+
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['snils', 'hospital'],
+                name='unique_snils_per_hospital'
+            )
+        ]
 
 
 class Admission(models.Model):

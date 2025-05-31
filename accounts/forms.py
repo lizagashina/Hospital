@@ -3,7 +3,7 @@ import re
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Patient, Department, Admission
+from .models import CustomUser, Patient, Department, Admission, Hospital
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -25,6 +25,13 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class AdmissionCreateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        hospital = kwargs.pop('hospital', None)
+        super().__init__(*args, **kwargs)
+
+        if hospital:
+            self.fields['department'].queryset = Department.objects.filter(hospital=hospital)
+
     class Meta:
         model = Admission
         fields = [
@@ -54,10 +61,17 @@ class PatientCreateForm(forms.ModelForm):
 
     def clean_snils(self):
         snils = self.cleaned_data.get('snils', '')
+        cleaned_snils = re.sub(r'[^\d]', '', snils)
+
         # Проверка формата при вводе
         if not re.match(r'^\d{3}-\d{3}-\d{3} \d{2}$', snils):
             raise forms.ValidationError('Введите СНИЛС в формате XXX-XXX-XXX XX')
-        return re.sub(r'[^\d]', '', snils)
+
+        # Проверка уникальности СНИЛС в больнице
+        if self.hospital and Patient.objects.filter(snils=cleaned_snils, hospital=self.hospital).exists():
+            raise forms.ValidationError('Пациент с таким СНИЛС уже существует в этой больнице')
+
+        return cleaned_snils
 
     class Meta:
         model = Patient
@@ -69,3 +83,7 @@ class PatientCreateForm(forms.ModelForm):
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.hospital = kwargs.pop('hospital', None)  # Добавляем этот параметр
+        super().__init__(*args, **kwargs)

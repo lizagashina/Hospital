@@ -14,7 +14,13 @@ from .models import Patient, Department, Admission
 
 
 
-
+# Декоратор для проверки принадлежности к больнице
+def hospital_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.hospital:
+            return render(request, 'accounts/waiting_approval.html')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 @login_required
 def mkb10_search_view(request):
@@ -77,18 +83,30 @@ def logout_view(request):
 
 
 @login_required
+@hospital_required
 def home_view(request):
-    user_departments = request.user.departments.all()
-    return render(request, 'accounts/home.html', {'departments': user_departments})
+    # Только отделения текущей больницы
+    departments = Department.objects.filter(hospital=request.user.hospital)
+    context = {
+        'departments': departments,  # или user_departments
+        'hospital': request.user.hospital
+    }
+    return render(request, 'accounts/home.html', context)
 
 
 @login_required
+@hospital_required
 def department_view(request, department_id):
-    department = get_object_or_404(Department, id=department_id)
+    department = get_object_or_404(
+        Department,
+        id=department_id,
+        hospital=request.user.hospital
+    )
     patients = department.get_current_patients()
     # Проверяем, что пользователь имеет доступ к этому отделению
     if not request.user.departments.filter(id=department_id).exists():
         return redirect('home')
+    patients = department.get_current_patients()
     return render(request, 'accounts/department.html', {
         'department': department,
         'patients': patients
@@ -96,8 +114,10 @@ def department_view(request, department_id):
 
 
 @login_required
+@hospital_required
 def patients_view(request):
-    patients = Patient.objects.annotate(
+    # Фильтрация пациентов по больнице
+    patients = Patient.objects.filter(hospital=request.user.hospital).annotate(
         last_admission_date=Max('admissions__admission_date')
     ).order_by('-last_admission_date')
 
@@ -130,31 +150,37 @@ def patients_view(request):
 
 
 @login_required
+@hospital_required
 def add_patient_view(request):
     if request.method == 'POST':
-        patient_form = PatientCreateForm(request.POST)
+        patient_form = PatientCreateForm(request.POST, hospital=request.user.hospital)
         if patient_form.is_valid():
-            patient = patient_form.save()
+            patient = patient_form.save(commit=False)
+            patient.hospital = request.user.hospital  # Привязываем к больнице
+            patient.save()
             return redirect('add_admission', patient_id=patient.id)
     else:
-        patient_form = PatientCreateForm()
+        patient_form = PatientCreateForm(hospital=request.user.hospital)
 
+    # Передаем больницу в форму для валидации СНИЛС
+    patient_form.hospital = request.user.hospital
     return render(request, 'accounts/add_patient.html', {'patient_form': patient_form})
 
 
 @login_required
+@hospital_required
 def add_admission_view(request, patient_id):
-    patient = get_object_or_404(Patient, id=patient_id)
+    patient = get_object_or_404(Patient, id=patient_id, hospital=request.user.hospital)
 
     if request.method == 'POST':
-        admission_form = AdmissionCreateForm(request.POST)
+        admission_form = AdmissionCreateForm(request.POST, hospital=request.user.hospital)
         if admission_form.is_valid():
             admission = admission_form.save(commit=False)
             admission.patient = patient
             admission.save()
             return redirect('patient_detail', patient_id=patient.id)
     else:
-        admission_form = AdmissionCreateForm()
+        admission_form = AdmissionCreateForm(hospital=request.user.hospital)
 
     return render(request, 'accounts/add_admission.html', {
         'admission_form': admission_form,
@@ -164,8 +190,13 @@ def add_admission_view(request, patient_id):
 
 
 @login_required
+@hospital_required
 def patient_detail_view(request, patient_id):
-    patient = get_object_or_404(Patient, id=patient_id)
+    patient = get_object_or_404(
+        Patient,
+        id=patient_id,
+        hospital=request.user.hospital
+    )
     active_admission = patient.admissions.filter(discharge_date__isnull=True).first()
     past_admissions = patient.admissions.filter(discharge_date__isnull=False).order_by('-admission_date')
 
@@ -177,16 +208,29 @@ def patient_detail_view(request, patient_id):
 
 
 @login_required
+@hospital_required
 def admission_detail_view(request, admission_id):
-    admission = get_object_or_404(Admission, id=admission_id)
+    admission = get_object_or_404(
+        Admission,
+        id=admission_id,
+        patient__hospital=request.user.hospital
+    )
     return render(request, 'accounts/admission_detail.html', {'admission': admission})
 
 
 @login_required
+@hospital_required
 def discharge_patient_view(request, admission_id):
-    admission = get_object_or_404(Admission, id=admission_id, discharge_date__isnull=True)
+    admission = get_object_or_404(
+        Admission,
+        id=admission_id,
+        discharge_date__isnull=True,
+        patient__hospital=request.user.hospital
+    )
+
     if request.method == 'POST':
         admission.discharge_date = timezone.now()
         admission.save()
         return redirect('patient_detail', patient_id=admission.patient.id)
+
     return redirect('admission_detail', admission_id=admission_id)
