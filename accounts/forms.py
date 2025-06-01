@@ -92,5 +92,9 @@ class PatientCreateForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.hospital = kwargs.pop('hospital', None)  # Добавляем этот параметр
+        self.hospital = kwargs.pop('hospital', None)
         super().__init__(*args, **kwargs)
+
+        # Для редактирования делаем СНИЛС необязательным
+        if self.instance.pk:
+            self.fields['snils'].required = False

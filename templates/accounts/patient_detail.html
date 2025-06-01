@@ -1,4 +1,5 @@
 {% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,6 +12,9 @@
                 </a>
             {% endif %}
             <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
+            {% if past_admissions.exists %}
+                <a href="#admissions-archive" class="btn btn-info ml-2">Архив</a>
+            {% endif %}
         </div>
     </div>
     {% if not active_admission %}
@@ -23,29 +27,107 @@
 
     <!-- Основная информация о пациенте -->
     <div class="card mb-4">
-        <div class="card-header">Основные данные</div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Основные данные</span>
+            <button class="btn btn-sm btn-outline-primary" id="editPatientBtn">
+                <i class="fas fa-edit"></i> Редактировать
+            </button>
+        </div>
         <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">ФИО:</dt>
-                <dd class="col-sm-9">{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</dd>
+            <!-- Форма редактирования (изначально скрыта) -->
+            <form id="patientForm" method="post" action="{% url 'edit_patient' patient.id %}" style="display: none;">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_last_name">Фамилия</label>
+                            <input type="text" name="last_name" value="{{ patient.last_name }}" class="form-control"
+                                   id="id_last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_first_name">Имя</label>
+                            <input type="text" name="first_name" value="{{ patient.first_name }}" class="form-control"
+                                   id="id_first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_middle_name">Отчество</label>
+                            <input type="text" name="middle_name" value="{{ patient.middle_name|default:'' }}"
+                                   class="form-control" id="id_middle_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_birth_date">Дата рождения</label>
+                            <input type="date" name="birth_date" value="{{ patient.birth_date|date:'Y-m-d' }}"
+                                   class="form-control" id="id_birth_date" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Пол</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="gender_m" value="M"
+                                           {% if patient.gender == 'M' %}checked{% endif %}>
+                                    <label class="form-check-label" for="gender_m">Мужской</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="gender_f" value="F"
+                                           {% if patient.gender == 'F' %}checked{% endif %}>
+                                    <label class="form-check-label" for="gender_f">Женский</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_snils">СНИЛС</label>
+                            <input type="text" name="snils" value="{{ patient.formatted_snils }}" class="form-control"
+                                   id="id_snils" placeholder="XXX-XXX-XXX XX">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_height">Рост (см)</label>
+                            <input type="number" name="height" value="{{ patient.height }}" class="form-control"
+                                   id="id_height" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_weight">Вес (кг)</label>
+                            <input type="number" name="weight" value="{{ patient.weight }}" class="form-control"
+                                   id="id_weight" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_birth_place">Место рождения</label>
+                            <input type="text" name="birth_place" value="{{ patient.birth_place|default:'' }}"
+                                   class="form-control" id="id_birth_place">
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right mt-3">
+                    <button type="button" class="btn btn-secondary mr-2" id="cancelEditBtn">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
 
-                <dt class="col-sm-3">Дата рождения:</dt>
-                <dd class="col-sm-9">{{ patient.birth_date|date:"d.m.Y" }}</dd>
+            <div id="patientView">
+                <dl class="row">
+                    <dt class="col-sm-3">ФИО:</dt>
+                    <dd class="col-sm-9">{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</dd>
 
-                <dt class="col-sm-3">Пол:</dt>
-                <dd class="col-sm-9">
-                    {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не указан{% endif %}
-                </dd>
+                    <dt class="col-sm-3">Дата рождения:</dt>
+                    <dd class="col-sm-9">{{ patient.birth_date|date:"d.m.Y" }}</dd>
 
-                <dt class="col-sm-3">СНИЛС:</dt>
-                <dd class="col-sm-9">{{ patient.formatted_snils }}</dd>
+                    <dt class="col-sm-3">Пол:</dt>
+                    <dd class="col-sm-9">
+                        {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не
+                            указан{% endif %}
+                    </dd>
 
-                <dt class="col-sm-3">Рост/Вес:</dt>
-                <dd class="col-sm-9">{{ patient.height }} см / {{ patient.weight }} кг</dd>
+                    <dt class="col-sm-3">СНИЛС:</dt>
+                    <dd class="col-sm-9">{{ patient.formatted_snils }}</dd>
 
-                <dt class="col-sm-3">Место рождения:</dt>
-                <dd class="col-sm-9">{{ patient.birth_place|default:"Не указано" }}</dd>
-            </dl>
+                    <dt class="col-sm-3">Рост/Вес:</dt>
+                    <dd class="col-sm-9">{{ patient.height }} см / {{ patient.weight }} кг</dd>
+
+                    <dt class="col-sm-3">Место рождения:</dt>
+                    <dd class="col-sm-9">{{ patient.birth_place|default:"Не указано" }}</dd>
+                </dl>
+            </div>
         </div>
     </div>
 
@@ -130,4 +212,22 @@
             </div>
         </div>
     {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const editBtn = document.getElementById('editPatientBtn');
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            const form = document.getElementById('patientForm');
+            const view = document.getElementById('patientView');
+
+            editBtn.addEventListener('click', function () {
+                form.style.display = 'block';
+                view.style.display = 'none';
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                form.style.display = 'none';
+                view.style.display = 'block';
+            });
+        });
+    </script>
 {% endblock %}

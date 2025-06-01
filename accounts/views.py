@@ -1,6 +1,9 @@
+import re
+
 import requests
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.utils import timezone
@@ -13,14 +16,15 @@ from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCrea
 from .models import Patient, Department, Admission
 
 
-
 # Декоратор для проверки принадлежности к больнице
 def hospital_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.hospital:
             return render(request, 'accounts/waiting_approval.html')
         return view_func(request, *args, **kwargs)
+
     return wrapper
+
 
 @login_required
 def mkb10_search_view(request):
@@ -52,6 +56,7 @@ def mkb10_search_view(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return render(request, 'accounts/mkb10_search.html')
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -220,11 +225,14 @@ def patient_detail_view(request, patient_id):
         department__hospital=request.user.hospital
     ).order_by('-admission_date')
 
+    patient_form = PatientCreateForm(instance=patient, hospital=request.user.hospital)
+
     return render(request, 'accounts/patient_detail.html', {
         'patient': patient,
         'active_admission': active_admission,
-        'past_admissions': past_admissions
-    })  
+        'past_admissions': past_admissions,
+        'patient_form': patient_form  # Добавляем форму в контекст
+    })
 
 
 @login_required
@@ -256,3 +264,44 @@ def discharge_patient_view(request, admission_id):
         return redirect('patient_detail', patient_id=admission.patient.id)
 
     return redirect('admission_detail', admission_id=admission_id)
+
+
+@login_required
+@hospital_required
+def edit_patient_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id, hospital=request.user.hospital)
+
+    if request.method == 'POST':
+        # Обработка данных формы
+        data = request.POST.copy()
+        # Очищаем СНИЛС от форматирования перед сохранением
+        if 'snils' in data:
+            data['snils'] = re.sub(r'[^\d]', '', data['snils'])
+
+        patient.last_name = data.get('last_name', patient.last_name)
+        patient.first_name = data.get('first_name', patient.first_name)
+        patient.middle_name = data.get('middle_name', patient.middle_name)
+        patient.birth_date = data.get('birth_date', patient.birth_date)
+        patient.gender = data.get('gender', patient.gender)
+        patient.snils = data.get('snils', patient.snils)
+        patient.height = data.get('height', patient.height)
+        patient.weight = data.get('weight', patient.weight)
+        patient.birth_place = data.get('birth_place', patient.birth_place)
+
+        try:
+            patient.full_clean()  # Валидация модели
+            patient.save()
+            return redirect('patient_detail', patient_id=patient.id)
+        except ValidationError as e:
+            # Обработка ошибок валидации
+            pass
+
+    # Получаем текущие данные о поступлениях для контекста
+    active_admission = patient.admissions.filter(discharge_date__isnull=True).first()
+    past_admissions = patient.admissions.filter(discharge_date__isnull=False).order_by('-admission_date')
+
+    return render(request, 'accounts/patient_detail.html', {
+        'patient': patient,
+        'active_admission': active_admission,
+        'past_admissions': past_admissions
+    })
