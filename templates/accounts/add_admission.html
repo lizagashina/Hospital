@@ -17,10 +17,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         {{ admission_form.department|as_crispy_field }}
-                        {{ admission_form.severity|as_crispy_field }}
                     </div>
                     <div class="col-md-6">
-                        {{ admission_form.temperature|as_crispy_field }}
                         {{ admission_form.room_number|as_crispy_field }}
                     </div>
                 </div>
@@ -79,13 +77,49 @@
             </div>
         </div>
 
-        <!-- Дополнительная информация -->
         <div class="card mb-4">
-            <div class="card-header">Дополнительная информация</div>
-            <div class="card-body">
-                {{ admission_form.notes|as_crispy_field }}
+            <div class="card-header" id="lifeHeading" style="cursor: pointer;"
+                 onclick="togglePanel('lifePanel', 'lifeIcon')">
+                Анамнез жизни
+                <i class="fas fa-chevron-down float-right" id="lifeIcon"></i>
+            </div>
+            <div class="card-body" id="lifePanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.life_info|as_crispy_field }}
+                </div>
             </div>
         </div>
+
+        <div class="card mb-4">
+            <div class="card-header" id="infoHeading" style="cursor: pointer;"
+                 onclick="togglePanel('infoPanel', 'infoIcon')">
+                Данные объективного исследования больного
+                <i class="fas fa-chevron-down float-right" id="infoIcon"></i>
+            </div>
+            <div class="card-body" id="infoPanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.severity|as_crispy_field }}
+                    {{ admission_form.mind|as_crispy_field }}
+                    {{ admission_form.movement|as_crispy_field }}
+                    {{ admission_form.constitutions|as_crispy_field }}
+                    {{ admission_form.admission_info|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" id="otherHeading" style="cursor: pointer;"
+                 onclick="togglePanel('otherPanel', 'otherIcon')">
+                Дополнительная информация
+                <i class="fas fa-chevron-down float-right" id="otherIcon"></i>
+            </div>
+            <div class="card-body" id="otherPanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.notes|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
 
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-save"></i> Сохранить

@@ -156,10 +156,26 @@ class Patient(models.Model):
 
 
 class Admission(models.Model):
+    MIND_CHOICES = [
+        ('clear', 'Ясное'),
+        ('confused', 'Спутанное'),
+        ('soporose', 'Сопорозное'),
+        ('comatose', 'Коматозное'),
+    ]
     SEVERITY_CHOICES = [
         ('mild', 'Удовлетворительное'),
         ('moderate', 'Средней тяжести'),
         ('severe', 'Тяжёлое'),
+    ]
+    MOVEMENT_CHOICES = [
+        ('active', 'Активное'),
+        ('passive', 'Пассивное'),
+        ('other', 'Вынужденное с его особенностями'),
+    ]
+    CONSTITUTION_CHOICES = [
+        ('normal', 'Нормостеник'),
+        ('astenic', 'Астеник'),
+        ('giper', 'Гиперстеник'),
     ]
 
     DEFAULT_DIAGNOSIS_INFO = (
@@ -170,16 +186,43 @@ class Admission(models.Model):
         "Непосредственные причины данной госпитализации: \n\n"
     )
 
+    DEFAULT_LIFE_INFO = (
+        "Образование и профессиональный анамнез: \n\n"
+        "Жилищные условия: \n\n"
+        "Перенесенные заболевания: \n\n"
+        "Привычные интоксикации: \n\n"
+        "Гинекологический анамнез: \n\n"
+        "Наследственность: \n\n"
+        "Семейная жизнь: \n\n"
+        "Эпидемиологический анамнез: \n\n"
+        "Страховой анамнез: \n\n"
+    )
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='admissions')
     admission_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата поступления')
     discharge_date = models.DateTimeField(null=True, blank=True, verbose_name='Дата выписки')
-    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, verbose_name='Состояние')
+    severity = models.CharField(max_length=10, blank=True, choices=SEVERITY_CHOICES, verbose_name='Состояние')
+    mind = models.CharField(max_length=10, blank=True, choices=MIND_CHOICES, verbose_name='Сознание')
+    movement = models.CharField(max_length=10, blank=True, choices=MOVEMENT_CHOICES, verbose_name='Положение')
+    constitutions = models.CharField(max_length=10, blank=True, choices=CONSTITUTION_CHOICES, verbose_name='Тип конституции')
     diagnosis = models.TextField(verbose_name='Диагноз')
-    temperature = models.DecimalField(max_digits=3, decimal_places=1, verbose_name='Температура')
+    temperature = models.DecimalField(max_digits=3, blank=True, null=True, decimal_places=1, verbose_name='Температура')
+    adhd = models.CharField(max_length=10, blank=True, verbose_name='Артериальное давление')
+    heart_rate = models.CharField(max_length=10, blank=True, verbose_name='ЧСС')
     room_number = models.CharField(max_length=10, verbose_name='Номер палаты')
     department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name='Отделение')
     diagnosis_info = models.TextField(
         verbose_name='Анамнез заболевания',
+        default=DEFAULT_DIAGNOSIS_INFO,
+        blank=True
+    )
+    life_info = models.TextField(
+        verbose_name='Анамнез жизни',
+        default=DEFAULT_LIFE_INFO,
+        blank=True
+    )
+    admission_info = models.TextField(
+        verbose_name='Данные объективного исследования больного',
         default=DEFAULT_DIAGNOSIS_INFO,
         blank=True
     )
@@ -208,7 +251,7 @@ class Admission(models.Model):
         default='Нет',
         blank=True
     )
-    notes = models.TextField(blank=True, verbose_name='Примечания')
+    notes = models.TextField(blank=True, verbose_name='Иные записи о состоянии здоровья')
 
     @property
     def is_active(self):
