@@ -162,6 +162,14 @@ class Admission(models.Model):
         ('severe', 'Тяжёлое'),
     ]
 
+    DEFAULT_DIAGNOSIS_INFO = (
+        "Начало болезни: когда и как началось заболевание.\n\n"
+        "Состояние больного непосредственно перед заболеванием: предполагаемая причина заболевания.\n\n"
+        "Результаты проведенных ранее исследований: \n\n"
+        "Способы лечения, применявшиеся до поступления в клинику, в т.ч. на амбулаторном этапе: \n\n"
+        "Непосредственные причины данной госпитализации: \n\n"
+    )
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='admissions')
     admission_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата поступления')
     discharge_date = models.DateTimeField(null=True, blank=True, verbose_name='Дата выписки')
@@ -170,6 +178,11 @@ class Admission(models.Model):
     temperature = models.DecimalField(max_digits=3, decimal_places=1, verbose_name='Температура')
     room_number = models.CharField(max_length=10, verbose_name='Номер палаты')
     department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name='Отделение')
+    diagnosis_info = models.TextField(
+        verbose_name='Анамнез заболевания',
+        default=DEFAULT_DIAGNOSIS_INFO,
+        blank=True
+    )
     cardiovascular_system = models.TextField(
         verbose_name='Сердечно-сосудистая система',
         default='Нет',

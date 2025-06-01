@@ -11,9 +11,6 @@
                 </a>
             {% endif %}
             <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
-            {% if past_admissions.exists %}
-                <a href="#admissions-archive" class="btn btn-info ml-2">Архив</a>
-            {% endif %}
         </div>
     </div>
     {% if not active_admission %}
@@ -23,6 +20,7 @@
             </a>
         </div>
     {% endif %}
+
     <!-- Основная информация о пациенте -->
     <div class="card mb-4">
         <div class="card-header">Основные данные</div>
@@ -36,8 +34,7 @@
 
                 <dt class="col-sm-3">Пол:</dt>
                 <dd class="col-sm-9">
-                    {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не
-                        указан{% endif %}
+                    {% if patient.gender == 'M' %}Мужской{% elif patient.gender == 'F' %}Женский{% else %}Не указан{% endif %}
                 </dd>
 
                 <dt class="col-sm-3">СНИЛС:</dt>
@@ -55,34 +52,54 @@
     <!-- Текущее поступление -->
     {% if active_admission %}
         <div class="card mb-4">
-            <div class="card-header">Текущее поступление</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Текущее поступление</span>
+                <a href="{% url 'admission_detail' active_admission.id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt"></i> Перейти к записи
+                </a>
+            </div>
             <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Отделение:</dt>
-                    <dd class="col-sm-9">{{ active_admission.department.name }}</dd>
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Отделение:</dt>
+                            <dd class="col-sm-7">{{ active_admission.department.name }}</dd>
 
-                    <dt class="col-sm-3">Палата:</dt>
-                    <dd class="col-sm-9">{{ active_admission.room_number }}</dd>
+                            <dt class="col-sm-5">Палата:</dt>
+                            <dd class="col-sm-7">{{ active_admission.room_number }}</dd>
 
-                    <dt class="col-sm-3">Дата поступления:</dt>
-                    <dd class="col-sm-9">{{ active_admission.admission_date|date:"d.m.Y H:i" }}</dd>
+                            <dt class="col-sm-5">Дата поступления:</dt>
+                            <dd class="col-sm-7">{{ active_admission.admission_date|date:"d.m.Y H:i" }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Состояние:</dt>
+                            <dd class="col-sm-7">{{ active_admission.get_severity_display }}</dd>
 
-                    <dt class="col-sm-3">Состояние:</dt>
-                    <dd class="col-sm-9">{{ active_admission.get_severity_display }}</dd>
+                            <dt class="col-sm-5">Температура:</dt>
+                            <dd class="col-sm-7">{{ active_admission.temperature }} °C</dd>
+                        </dl>
+                    </div>
+                </div>
 
-                    <dt class="col-sm-3">Диагноз:</dt>
-                    <dd class="col-sm-9">{{ active_admission.diagnosis }}</dd>
+                <div class="mt-3">
+                    <h5>Диагноз:</h5>
+                    <p>{{ active_admission.diagnosis }}</p>
+                </div>
 
-                    <dt class="col-sm-3">Температура:</dt>
-                    <dd class="col-sm-9">{{ active_admission.temperature }} °C</dd>
-
-                    <dt class="col-sm-3">Примечания:</dt>
-                    <dd class="col-sm-9">{{ active_admission.notes|default:"Нет примечаний" }}</dd>
-                </dl>
+                {% if active_admission.notes %}
+                    <div class="mt-3">
+                        <h5>Примечания:</h5>
+                        <p>{{ active_admission.notes }}</p>
+                    </div>
+                {% endif %}
 
                 <form method="post" action="{% url 'discharge_patient' active_admission.id %}" class="text-right mt-3">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Выписать пациента</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Выписать пациента
+                    </button>
                 </form>
             </div>
         </div>

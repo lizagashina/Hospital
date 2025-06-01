@@ -8,39 +8,10 @@
 
     <div class="row">
         <!-- Блок с данными пациента -->
-        <div class="col-md-4">
+        <div class="col-md-12">
+            <!-- Основные детали поступления -->
             <div class="card mb-4">
-                <div class="card-header">Данные пациента</div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-5">ФИО:</dt>
-                        <dd class="col-sm-7">{{ admission.patient.last_name }} {{ admission.patient.first_name }} {{ admission.patient.middle_name }}</dd>
-
-                        <dt class="col-sm-5">Дата рождения:</dt>
-                        <dd class="col-sm-7">{{ admission.patient.birth_date|date:"d.m.Y" }}</dd>
-
-                        <dt class="col-sm-5">Пол:</dt>
-                        <dd class="col-sm-7">
-                            {% if admission.patient.gender == 'M' %}Мужской
-                            {% elif admission.patient.gender == 'F' %}Женский
-                            {% else %}Не указан
-                            {% endif %}
-                        </dd>
-
-                        <dt class="col-sm-5">СНИЛС:</dt>
-                        <dd class="col-sm-7">{{ admission.patient.formatted_snils }}</dd>
-
-                        <dt class="col-sm-5">Рост/Вес:</dt>
-                        <dd class="col-sm-7">{{ admission.patient.height }} см / {{ admission.patient.weight }} кг</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Блок с деталями поступления -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Детали поступления</div>
+                <div class="card-header">Основные детали поступления</div>
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-3">Отделение:</dt>
@@ -64,63 +35,99 @@
                         <dt class="col-sm-3">Состояние:</dt>
                         <dd class="col-sm-9">{{ admission.get_severity_display }}</dd>
 
-                        <dt class="col-sm-3">Диагноз:</dt>
-                        <dd class="col-sm-9">{{ admission.diagnosis }}</dd>
-
                         <dt class="col-sm-3">Температура:</dt>
                         <dd class="col-sm-9">{{ admission.temperature }} °C</dd>
-
-                        <dt class="col-sm-3">Примечания:</dt>
-                        <dd class="col-sm-9">{{ admission.notes|default:"Нет примечаний" }}</dd>
                     </dl>
+                </div>
+            </div>
 
-                    {% if admission.is_active %}
-                        <form method="post" action="{% url 'discharge_patient' admission.id %}" class="text-right mt-3">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Выписать пациента</button>
-                        </form>
+            <!-- Диагноз и анамнез -->
+            <div class="card mb-4">
+                <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
+                     onclick="togglePanel('diagnosisPanel', 'diagnosisIcon')">
+                    Диагноз и анамнез заболевания
+                    <i class="fas fa-chevron-down float-right" id="diagnosisIcon"></i>
+                </div>
+                <div class="card-body" id="diagnosisPanel" style="display: none;">
+                    <div class="mb-3">
+                        <h5>Основной диагноз:</h5>
+                        <p>{{ admission.diagnosis }}</p>
+                    </div>
+                    {% if admission.diagnosis_info %}
+                        <div>
+                            <h5>Анамнез заболевания:</h5>
+                            <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.diagnosis_info }}</pre>
+                        </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="card mt-4">
-            <div class="card-header" id="systemsDetailHeading" style="cursor: pointer;"
-                 onclick="toggleSystemsDetailPanel()">
-                Опрос по системам органов
-                <i class="fas fa-chevron-down float-right" id="systemsDetailIcon"></i>
-            </div>
-            <div class="card-body" id="systemsDetailPanel" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6">
-                        <dl class="row">
-                            <dt class="col-sm-6">Сердечно-сосудистая система:</dt>
-                            <dd class="col-sm-6">{{ admission.cardiovascular_system }}</dd>
 
-                            <dt class="col-sm-6">Дыхательная система:</dt>
-                            <dd class="col-sm-6">{{ admission.respiratory_system }}</dd>
+            <!-- Опрос по системам органов -->
+            <div class="card mb-4">
+                <div class="card-header" id="systemsHeading" style="cursor: pointer;"
+                     onclick="togglePanel('systemsPanel', 'systemsIcon')">
+                    Опрос по системам органов
+                    <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
+                </div>
+                <div class="card-body" id="systemsPanel" style="display: none;">
+                    <dl class="row">
+                        <dt class="col-sm-6">Сердечно-сосудистая система:</dt>
+                        <dd class="col-sm-6">{{ admission.cardiovascular_system }}</dd>
 
-                            <dt class="col-sm-6">Система пищеварения:</dt>
-                            <dd class="col-sm-6">{{ admission.digestive_system }}</dd>
-                        </dl>
-                    </div>
-                    <div class="col-md-6">
-                        <dl class="row">
-                            <dt class="col-sm-6">Мочевыделительная система:</dt>
-                            <dd class="col-sm-6">{{ admission.urinary_system }}</dd>
+                        <dt class="col-sm-6">Дыхательная система:</dt>
+                        <dd class="col-sm-6">{{ admission.respiratory_system }}</dd>
 
-                            <dt class="col-sm-6">Нервная система:</dt>
-                            <dd class="col-sm-6">{{ admission.nervous_system }}</dd>
-                        </dl>
-                    </div>
+                        <dt class="col-sm-6">Система пищеварения:</dt>
+                        <dd class="col-sm-6">{{ admission.digestive_system }}</dd>
+
+                        <dt class="col-sm-6">Мочевыделительная система:</dt>
+                        <dd class="col-sm-6">{{ admission.urinary_system }}</dd>
+
+                        <dt class="col-sm-6">Нервная система:</dt>
+                        <dd class="col-sm-6">{{ admission.nervous_system }}</dd>
+                    </dl>
                 </div>
             </div>
+
+            <!-- Дополнительная информация -->
+            <div class="card mb-4">
+                <div class="card-header">Дополнительная информация</div>
+                <div class="card-body">
+                    <p>{{ admission.notes|default:"Нет примечаний" }}</p>
+                </div>
+            </div>
+
+            {% if admission.is_active %}
+                <form method="post" action="{% url 'discharge_patient' admission.id %}" class="text-right mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Выписать пациента</button>
+                </form>
+            {% endif %}
         </div>
+
     </div>
 
+    <style>
+        .card-header[data-toggle="collapse"] {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .card-header[data-toggle="collapse"]:hover {
+            background-color: #f8f9fa;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+        }
+    </style>
+
     <script>
-        function toggleSystemsDetailPanel() {
-            const panel = document.getElementById('systemsDetailPanel');
-            const icon = document.getElementById('systemsDetailIcon');
+        function togglePanel(panelId, iconId) {
+            const panel = document.getElementById(panelId);
+            const icon = document.getElementById(iconId);
 
             if (panel.style.display === 'none') {
                 panel.style.display = 'block';
@@ -132,5 +139,10 @@
                 icon.classList.add('fa-chevron-down');
             }
         }
+
+        // Автоматически открываем панель диагноза при загрузке
+        document.addEventListener('DOMContentLoaded', function () {
+            togglePanel('diagnosisPanel', 'diagnosisIcon');
+        });
     </script>
 {% endblock %}

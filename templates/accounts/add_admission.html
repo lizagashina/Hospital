@@ -9,49 +9,77 @@
 
     <form method="post" class="form">
         {% csrf_token %}
+
+        <!-- Основные данные -->
         <div class="card mb-4">
             <div class="card-header">Основные данные</div>
             <div class="card-body">
-                {{ admission_form.department|as_crispy_field }}
-                {{ admission_form.severity|as_crispy_field }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ admission_form.department|as_crispy_field }}
+                        {{ admission_form.severity|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ admission_form.temperature|as_crispy_field }}
+                        {{ admission_form.room_number|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Диагноз и анамнез -->
+        <div class="card mb-4">
+            <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
+                 onclick="togglePanel('diagnosisPanel','diagnosisIcon')">
+                Диагноз и анамнез заболевания
+                <i class="fas fa-chevron-down float-right" id="diagnosisIcon"></i>
+            </div>
+            <div class="card-body" id="diagnosisPanel" style="display: none;">
                 <div class="form-group">
-                    <label for="diagnosis">Диагноз</label>
-                    <div class="input-group">
+                    <label for="diagnosis">Основной диагноз</label>
+                    <div class="input-group mb-3">
                         <input type="text" name="diagnosis" class="form-control" id="diagnosis" required>
                         <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary"
+                            <button type="button" class="btn btn-outline-primary"
                                     onclick="window.open('{% url 'mkb10_search' %}', 'mkb_search', 'width=800,height=600')">
-                                Поиск МКБ-10
+                                <i class="fas fa-search"></i> Поиск МКБ-10
                             </button>
                         </div>
                     </div>
                 </div>
-                {{ admission_form.temperature|as_crispy_field }}
-                {{ admission_form.room_number|as_crispy_field }}
-            </div>
-        </div>
 
-            <div class="card mb-4">
-        <div class="card-header" id="systemsHeading" style="cursor: pointer;"
-             onclick="toggleSystemsPanel()">
-            Опрос по системам органов
-            <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
-        </div>
-        <div class="card-body" id="systemsPanel" style="display: none;">
-            <div class="row">
-                <div class="col-md-6">
-                    {{ admission_form.cardiovascular_system|as_crispy_field }}
-                    {{ admission_form.respiratory_system|as_crispy_field }}
-                    {{ admission_form.digestive_system|as_crispy_field }}
-                </div>
-                <div class="col-md-6">
-                    {{ admission_form.urinary_system|as_crispy_field }}
-                    {{ admission_form.nervous_system|as_crispy_field }}
+                <div class="form-group">
+                    {{ admission_form.diagnosis_info|as_crispy_field }}
+                    <small class="form-text text-muted">
+                        Подробно опишите историю заболевания, предыдущие исследования и лечение
+                    </small>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Опрос по системам органов -->
+        <div class="card mb-4">
+            <div class="card-header" id="systemsHeading" style="cursor: pointer;"
+                 onclick="togglePanel('systemsPanel', 'systemsIcon')">
+                Опрос по системам органов
+                <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
+            </div>
+            <div class="card-body" id="systemsPanel" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ admission_form.cardiovascular_system|as_crispy_field }}
+                        {{ admission_form.respiratory_system|as_crispy_field }}
+                        {{ admission_form.digestive_system|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ admission_form.urinary_system|as_crispy_field }}
+                        {{ admission_form.nervous_system|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительная информация -->
         <div class="card mb-4">
             <div class="card-header">Дополнительная информация</div>
             <div class="card-body">
@@ -59,13 +87,34 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Сохранить
+        </button>
     </form>
 
+    <style>
+        .card-header[data-toggle="collapse"] {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .card-header[data-toggle="collapse"]:hover {
+            background-color: #f8f9fa;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+    </style>
+
     <script>
-        function toggleSystemsPanel() {
-            const panel = document.getElementById('systemsPanel');
-            const icon = document.getElementById('systemsIcon');
+        function togglePanel(panelId, iconId) {
+            const panel = document.getElementById(panelId);
+            const icon = document.getElementById(iconId);
 
             if (panel.style.display === 'none') {
                 panel.style.display = 'block';
@@ -78,10 +127,16 @@
             }
         }
 
-        // Обработчик для MKB-10 (существующий код)
         window.addEventListener('message', function (e) {
             if (e.data.mkb_code && e.data.mkb_name) {
-                document.getElementById('diagnosis').value = `${e.data.mkb_code} ${e.data.mkb_name}`;
+                document.getElementById('id_diagnosis').value = `${e.data.mkb_code} ${e.data.mkb_name}`;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const diagnosisInput = document.getElementById('id_diagnosis');
+            if (!diagnosisInput.value) {
+                togglePanel('diagnosisPanel', 'diagnosisIcon');
             }
         });
     </script>
