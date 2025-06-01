@@ -209,13 +209,35 @@ def patient_detail_view(request, patient_id):
 
 @login_required
 @hospital_required
+def patient_detail_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id, hospital=request.user.hospital)
+    active_admission = patient.admissions.filter(
+        discharge_date__isnull=True,
+        department__hospital=request.user.hospital
+    ).first()
+    past_admissions = patient.admissions.filter(
+        discharge_date__isnull=False,
+        department__hospital=request.user.hospital
+    ).order_by('-admission_date')
+
+    return render(request, 'accounts/patient_detail.html', {
+        'patient': patient,
+        'active_admission': active_admission,
+        'past_admissions': past_admissions
+    })  
+
+
+@login_required
+@hospital_required
 def admission_detail_view(request, admission_id):
     admission = get_object_or_404(
         Admission,
         id=admission_id,
         patient__hospital=request.user.hospital
     )
-    return render(request, 'accounts/admission_detail.html', {'admission': admission})
+    return render(request, 'accounts/admission_detail.html', {
+        'admission': admission
+    })
 
 
 @login_required
