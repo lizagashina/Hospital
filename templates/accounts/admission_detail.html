@@ -83,5 +83,54 @@
                 </div>
             </div>
         </div>
+        <div class="card mt-4">
+            <div class="card-header" id="systemsDetailHeading" style="cursor: pointer;"
+                 onclick="toggleSystemsDetailPanel()">
+                Опрос по системам органов
+                <i class="fas fa-chevron-down float-right" id="systemsDetailIcon"></i>
+            </div>
+            <div class="card-body" id="systemsDetailPanel" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Сердечно-сосудистая система:</dt>
+                            <dd class="col-sm-6">{{ admission.cardiovascular_system }}</dd>
+
+                            <dt class="col-sm-6">Дыхательная система:</dt>
+                            <dd class="col-sm-6">{{ admission.respiratory_system }}</dd>
+
+                            <dt class="col-sm-6">Система пищеварения:</dt>
+                            <dd class="col-sm-6">{{ admission.digestive_system }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Мочевыделительная система:</dt>
+                            <dd class="col-sm-6">{{ admission.urinary_system }}</dd>
+
+                            <dt class="col-sm-6">Нервная система:</dt>
+                            <dd class="col-sm-6">{{ admission.nervous_system }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        function toggleSystemsDetailPanel() {
+            const panel = document.getElementById('systemsDetailPanel');
+            const icon = document.getElementById('systemsDetailIcon');
+
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                panel.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+    </script>
 {% endblock %}

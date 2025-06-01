@@ -170,6 +170,31 @@ class Admission(models.Model):
     temperature = models.DecimalField(max_digits=3, decimal_places=1, verbose_name='Температура')
     room_number = models.CharField(max_length=10, verbose_name='Номер палаты')
     department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name='Отделение')
+    cardiovascular_system = models.TextField(
+        verbose_name='Сердечно-сосудистая система',
+        default='Нет',
+        blank=True
+    )
+    respiratory_system = models.TextField(
+        verbose_name='Дыхательная система',
+        default='Нет',
+        blank=True
+    )
+    digestive_system = models.TextField(
+        verbose_name='Система пищеварения',
+        default='Нет',
+        blank=True
+    )
+    urinary_system = models.TextField(
+        verbose_name='Мочевыделительная система',
+        default='Нет',
+        blank=True
+    )
+    nervous_system = models.TextField(
+        verbose_name='Нервная система',
+        default='Нет',
+        blank=True
+    )
     notes = models.TextField(blank=True, verbose_name='Примечания')
 
     @property

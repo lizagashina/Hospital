@@ -3,14 +3,14 @@
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Добавление пациента</h2>
+        <h2>Добавление поступления</h2>
         <a href="{% url 'patients' %}" class="btn btn-secondary">Назад</a>
     </div>
 
     <form method="post" class="form">
         {% csrf_token %}
         <div class="card mb-4">
-            <div class="card-header">Данные поступления</div>
+            <div class="card-header">Основные данные</div>
             <div class="card-body">
                 {{ admission_form.department|as_crispy_field }}
                 {{ admission_form.severity|as_crispy_field }}
@@ -31,10 +31,54 @@
             </div>
         </div>
 
+            <div class="card mb-4">
+        <div class="card-header" id="systemsHeading" style="cursor: pointer;"
+             onclick="toggleSystemsPanel()">
+            Опрос по системам органов
+            <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
+        </div>
+        <div class="card-body" id="systemsPanel" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    {{ admission_form.cardiovascular_system|as_crispy_field }}
+                    {{ admission_form.respiratory_system|as_crispy_field }}
+                    {{ admission_form.digestive_system|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ admission_form.urinary_system|as_crispy_field }}
+                    {{ admission_form.nervous_system|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Дополнительная информация</div>
+            <div class="card-body">
+                {{ admission_form.notes|as_crispy_field }}
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </form>
 
     <script>
+        function toggleSystemsPanel() {
+            const panel = document.getElementById('systemsPanel');
+            const icon = document.getElementById('systemsIcon');
+
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                panel.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Обработчик для MKB-10 (существующий код)
         window.addEventListener('message', function (e) {
             if (e.data.mkb_code && e.data.mkb_name) {
                 document.getElementById('diagnosis').value = `${e.data.mkb_code} ${e.data.mkb_name}`;

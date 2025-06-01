@@ -36,12 +36,18 @@ class AdmissionCreateForm(forms.ModelForm):
         model = Admission
         fields = [
             'severity', 'diagnosis', 'temperature',
-            'room_number', 'department', 'notes'
+            'room_number', 'department', 'notes', 'cardiovascular_system', 'respiratory_system',
+            'digestive_system', 'urinary_system', 'nervous_system'
         ]
         widgets = {
             'admission_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'discharge_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'department': forms.Select(attrs={'class': 'form-control'}),
+            'cardiovascular_system': forms.Textarea(attrs={'rows': 2}),
+            'respiratory_system': forms.Textarea(attrs={'rows': 2}),
+            'digestive_system': forms.Textarea(attrs={'rows': 2}),
+            'urinary_system': forms.Textarea(attrs={'rows': 2}),
+            'nervous_system': forms.Textarea(attrs={'rows': 2}),
         }
 
 
