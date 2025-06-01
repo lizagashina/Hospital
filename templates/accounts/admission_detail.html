@@ -32,11 +32,6 @@
                             {% endif %}
                         </dd>
 
-                        <dt class="col-sm-3">Состояние:</dt>
-                        <dd class="col-sm-9">{{ admission.get_severity_display }}</dd>
-
-                        <dt class="col-sm-3">Температура:</dt>
-                        <dd class="col-sm-9">{{ admission.temperature }} °C</dd>
                     </dl>
                 </div>
             </div>
@@ -89,11 +84,54 @@
                 </div>
             </div>
 
-            <!-- Дополнительная информация -->
             <div class="card mb-4">
-                <div class="card-header">Дополнительная информация</div>
-                <div class="card-body">
-                    <p>{{ admission.notes|default:"Нет примечаний" }}</p>
+                <div class="card-header" id="lifeHeading" style="cursor: pointer;"
+                     onclick="togglePanel('lifePanel', 'lifeIcon')">
+                    Анамнез жизни
+                    <i class="fas fa-chevron-down float-right" id="lifeIcon"></i>
+                </div>
+                <div class="card-body" id="lifePanel" style="display: none;">
+                    <h5>Анамнез жизни:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.life_info }}</pre>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header" id="infoHeading" style="cursor: pointer;"
+                     onclick="togglePanel('infoPanel', 'infoIcon')">
+                    Данные объективного исследования больного
+                    <i class="fas fa-chevron-down float-right" id="infoIcon"></i>
+                </div>
+                <div class="card-body" id="infoPanel" style="display: none;">
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Состояние:</dt>
+                            <dd class="col-sm-9">{{ admission.get_severity_display }}</dd>
+
+                            <dt class="col-sm-3">Сознание:</dt>
+                            <dd class="col-sm-9">{{ admission.get_mind_display }}</dd>
+
+                            <dt class="col-sm-3">Положение:</dt>
+                            <dd class="col-sm-9">{{ admission.get_movement_display }}</dd>
+
+                            <dt class="col-sm-3">Тип конституции:</dt>
+                            <dd class="col-sm-9">{{ admission.get_constitutions_display }}</dd>
+                        </dl>
+                    </div>
+                    <h5>Данные объективного исследования больного:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.admission_info }}</pre>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header" id="otherHeading" style="cursor: pointer;"
+                     onclick="togglePanel('otherPanel', 'otherIcon')">
+                    Дополнительная информация
+                    <i class="fas fa-chevron-down float-right" id="otherIcon"></i>
+                </div>
+                <div class="card-body" id="otherPanel" style="display: none;">
+                    <h5>Дополнительные записи при поступлении:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.notes|default:"Нет примечаний" }}</pre>
                 </div>
             </div>
 

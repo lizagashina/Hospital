@@ -12,9 +12,6 @@
                 </a>
             {% endif %}
             <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
-            {% if past_admissions.exists %}
-                <a href="#admissions-archive" class="btn btn-info ml-2">Архив</a>
-            {% endif %}
         </div>
     </div>
     {% if not active_admission %}
