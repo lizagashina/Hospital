@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-uckpb@!1jpb&#=&d2&(n+%1ise@arg87d58mbont-^5nf-i^tw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['история-болезни.рф']
 
 # Application definition
 
