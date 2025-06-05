@@ -1,0 +1,41 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Создание пациента</h2>
+        <a href="{% url 'patients' %}" class="btn btn-secondary">Назад</a>
+    </div>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-header">Основные данные</div>
+            <div class="card-body">
+                {{ patient_form.last_name|as_crispy_field }}
+                {{ patient_form.first_name|as_crispy_field }}
+                {{ patient_form.middle_name|as_crispy_field }}
+                {{ patient_form.birth_date|as_crispy_field }}
+                {{ patient_form.birth_place|as_crispy_field }}
+                {{ patient_form.snils|as_crispy_field }}
+                {{ patient_form.height|as_crispy_field }}
+                {{ patient_form.weight|as_crispy_field }}
+                <div class="form-group">
+                    <label>Пол</label>
+                    <div>
+                        {% for choice in patient_form.gender %}
+                            <div class="form-check form-check-inline">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+{% endblock %}

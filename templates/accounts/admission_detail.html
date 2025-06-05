@@ -1,0 +1,186 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
+        <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-secondary">Назад к пациенту</a>
+    </div>
+
+    <div class="row">
+        <!-- Блок с данными пациента -->
+        <div class="col-md-12">
+            <!-- Основные детали поступления -->
+            <div class="card mb-4">
+                <div class="card-header">Основные детали поступления</div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Отделение:</dt>
+                        <dd class="col-sm-9">{{ admission.department.name }}</dd>
+
+                        <dt class="col-sm-3">Палата:</dt>
+                        <dd class="col-sm-9">{{ admission.room_number }}</dd>
+
+                        <dt class="col-sm-3">Дата поступления:</dt>
+                        <dd class="col-sm-9">{{ admission.admission_date|date:"d.m.Y H:i" }}</dd>
+
+                        <dt class="col-sm-3">Дата выписки:</dt>
+                        <dd class="col-sm-9">
+                            {% if admission.discharge_date %}
+                                {{ admission.discharge_date|date:"d.m.Y H:i" }}
+                            {% else %}
+                                Пациент в стационаре
+                            {% endif %}
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Диагноз и анамнез -->
+            <div class="card mb-4">
+                <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
+                     onclick="togglePanel('diagnosisPanel', 'diagnosisIcon')">
+                    Диагноз и анамнез заболевания
+                    <i class="fas fa-chevron-down float-right" id="diagnosisIcon"></i>
+                </div>
+                <div class="card-body" id="diagnosisPanel" style="display: none;">
+                    <div class="mb-3">
+                        <h5>Основной диагноз:</h5>
+                        <p>{{ admission.diagnosis }}</p>
+                    </div>
+                    {% if admission.diagnosis_info %}
+                        <div>
+                            <h5>Анамнез заболевания:</h5>
+                            <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.diagnosis_info }}</pre>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Опрос по системам органов -->
+            <div class="card mb-4">
+                <div class="card-header" id="systemsHeading" style="cursor: pointer;"
+                     onclick="togglePanel('systemsPanel', 'systemsIcon')">
+                    Опрос по системам органов
+                    <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
+                </div>
+                <div class="card-body" id="systemsPanel" style="display: none;">
+                    <dl class="row">
+                        <dt class="col-sm-6">Сердечно-сосудистая система:</dt>
+                        <dd class="col-sm-6">{{ admission.cardiovascular_system }}</dd>
+
+                        <dt class="col-sm-6">Дыхательная система:</dt>
+                        <dd class="col-sm-6">{{ admission.respiratory_system }}</dd>
+
+                        <dt class="col-sm-6">Система пищеварения:</dt>
+                        <dd class="col-sm-6">{{ admission.digestive_system }}</dd>
+
+                        <dt class="col-sm-6">Мочевыделительная система:</dt>
+                        <dd class="col-sm-6">{{ admission.urinary_system }}</dd>
+
+                        <dt class="col-sm-6">Нервная система:</dt>
+                        <dd class="col-sm-6">{{ admission.nervous_system }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header" id="lifeHeading" style="cursor: pointer;"
+                     onclick="togglePanel('lifePanel', 'lifeIcon')">
+                    Анамнез жизни
+                    <i class="fas fa-chevron-down float-right" id="lifeIcon"></i>
+                </div>
+                <div class="card-body" id="lifePanel" style="display: none;">
+                    <h5>Анамнез жизни:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.life_info }}</pre>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header" id="infoHeading" style="cursor: pointer;"
+                     onclick="togglePanel('infoPanel', 'infoIcon')">
+                    Данные объективного исследования больного
+                    <i class="fas fa-chevron-down float-right" id="infoIcon"></i>
+                </div>
+                <div class="card-body" id="infoPanel" style="display: none;">
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Состояние:</dt>
+                            <dd class="col-sm-9">{{ admission.get_severity_display }}</dd>
+
+                            <dt class="col-sm-3">Сознание:</dt>
+                            <dd class="col-sm-9">{{ admission.get_mind_display }}</dd>
+
+                            <dt class="col-sm-3">Положение:</dt>
+                            <dd class="col-sm-9">{{ admission.get_movement_display }}</dd>
+
+                            <dt class="col-sm-3">Тип конституции:</dt>
+                            <dd class="col-sm-9">{{ admission.get_constitutions_display }}</dd>
+                        </dl>
+                    </div>
+                    <h5>Данные объективного исследования больного:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.admission_info }}</pre>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header" id="otherHeading" style="cursor: pointer;"
+                     onclick="togglePanel('otherPanel', 'otherIcon')">
+                    Дополнительная информация
+                    <i class="fas fa-chevron-down float-right" id="otherIcon"></i>
+                </div>
+                <div class="card-body" id="otherPanel" style="display: none;">
+                    <h5>Дополнительные записи при поступлении:</h5>
+                    <pre style="white-space: pre-wrap; font-family: inherit;">{{ admission.notes|default:"Нет примечаний" }}</pre>
+                </div>
+            </div>
+
+            {% if admission.is_active %}
+                <form method="post" action="{% url 'discharge_patient' admission.id %}" class="text-right mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Выписать пациента</button>
+                </form>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <style>
+        .card-header[data-toggle="collapse"] {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .card-header[data-toggle="collapse"]:hover {
+            background-color: #f8f9fa;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+        }
+    </style>
+
+    <script>
+        function togglePanel(panelId, iconId) {
+            const panel = document.getElementById(panelId);
+            const icon = document.getElementById(iconId);
+
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                panel.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Автоматически открываем панель диагноза при загрузке
+        document.addEventListener('DOMContentLoaded', function () {
+            togglePanel('diagnosisPanel', 'diagnosisIcon');
+        });
+    </script>
+{% endblock %}

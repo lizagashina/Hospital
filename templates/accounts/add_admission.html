@@ -1,0 +1,177 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Добавление поступления</h2>
+        <a href="{% url 'patients' %}" class="btn btn-secondary">Назад</a>
+    </div>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+
+        <!-- Основные данные -->
+        <div class="card mb-4">
+            <div class="card-header">Основные данные</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ admission_form.department|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ admission_form.room_number|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Диагноз и анамнез -->
+        <div class="card mb-4">
+            <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
+                 onclick="togglePanel('diagnosisPanel','diagnosisIcon')">
+                Диагноз и анамнез заболевания
+                <i class="fas fa-chevron-down float-right" id="diagnosisIcon"></i>
+            </div>
+            <div class="card-body" id="diagnosisPanel" style="display: none;">
+                <div class="form-group">
+                    <label for="diagnosis">Основной диагноз</label>
+                    <div class="input-group mb-3">
+                        <input type="text" name="diagnosis" class="form-control" id="diagnosis" required>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-primary"
+                                    onclick="window.open('{% url 'mkb10_search' %}', 'mkb_search', 'width=800,height=600')">
+                                <i class="fas fa-search"></i> Поиск МКБ-10
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ admission_form.diagnosis_info|as_crispy_field }}
+                    <small class="form-text text-muted">
+                        Подробно опишите историю заболевания, предыдущие исследования и лечение
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Опрос по системам органов -->
+        <div class="card mb-4">
+            <div class="card-header" id="systemsHeading" style="cursor: pointer;"
+                 onclick="togglePanel('systemsPanel', 'systemsIcon')">
+                Опрос по системам органов
+                <i class="fas fa-chevron-down float-right" id="systemsIcon"></i>
+            </div>
+            <div class="card-body" id="systemsPanel" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ admission_form.cardiovascular_system|as_crispy_field }}
+                        {{ admission_form.respiratory_system|as_crispy_field }}
+                        {{ admission_form.digestive_system|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ admission_form.urinary_system|as_crispy_field }}
+                        {{ admission_form.nervous_system|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" id="lifeHeading" style="cursor: pointer;"
+                 onclick="togglePanel('lifePanel', 'lifeIcon')">
+                Анамнез жизни
+                <i class="fas fa-chevron-down float-right" id="lifeIcon"></i>
+            </div>
+            <div class="card-body" id="lifePanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.life_info|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" id="infoHeading" style="cursor: pointer;"
+                 onclick="togglePanel('infoPanel', 'infoIcon')">
+                Данные объективного исследования больного
+                <i class="fas fa-chevron-down float-right" id="infoIcon"></i>
+            </div>
+            <div class="card-body" id="infoPanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.severity|as_crispy_field }}
+                    {{ admission_form.mind|as_crispy_field }}
+                    {{ admission_form.movement|as_crispy_field }}
+                    {{ admission_form.constitutions|as_crispy_field }}
+                    {{ admission_form.admission_info|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" id="otherHeading" style="cursor: pointer;"
+                 onclick="togglePanel('otherPanel', 'otherIcon')">
+                Дополнительная информация
+                <i class="fas fa-chevron-down float-right" id="otherIcon"></i>
+            </div>
+            <div class="card-body" id="otherPanel" style="display: none;">
+                <div class="form-group">
+                    {{ admission_form.notes|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Сохранить
+        </button>
+    </form>
+
+    <style>
+        .card-header[data-toggle="collapse"] {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .card-header[data-toggle="collapse"]:hover {
+            background-color: #f8f9fa;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+    </style>
+
+    <script>
+        function togglePanel(panelId, iconId) {
+            const panel = document.getElementById(panelId);
+            const icon = document.getElementById(iconId);
+
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                panel.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        window.addEventListener('message', function (e) {
+            if (e.data.mkb_code && e.data.mkb_name) {
+                document.getElementById('id_diagnosis').value = `${e.data.mkb_code} ${e.data.mkb_name}`;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const diagnosisInput = document.getElementById('id_diagnosis');
+            if (!diagnosisInput.value) {
+                togglePanel('diagnosisPanel', 'diagnosisIcon');
+            }
+        });
+    </script>
+{% endblock %}
