@@ -1,13 +1,15 @@
 {% extends 'accounts/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
-    <div>
-        <a href="{% url 'notes' admission.id %}" class="btn btn-primary">Записи о пациенте</a>
-        <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-outline-secondary mr-2">Назад к пациенту</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
+        <div>
+            <a href="{% url 'analytics' admission.id %}" class="btn btn-primary">Аналитика</a>
+            <a href="{% url 'notes' admission.id %}" class="btn btn-primary">Записи о пациенте</a>
+            <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-outline-secondary mr-2">Назад к
+                пациенту</a>
+        </div>
     </div>
-</div>
 
 
     <div class="row">

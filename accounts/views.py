@@ -380,3 +380,43 @@ def note_detail_view(request, note_id):
         'note': note
     })
 
+from django.shortcuts import render, get_object_or_404
+
+def analytics_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id)
+    metric = request.GET.get('metric', 'hr')  # по умолчанию ЧСС
+
+    if metric == 'temp':
+        data_points = HealthNote.objects.filter(admission=admission).exclude(temperature_value__isnull=True).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        values = [float(note.temperature_value) for note in data_points]
+        context = {
+            'labels': labels,
+            'values': values,
+            'metric': metric,
+            'admission': admission
+        }
+    elif metric == 'bp':
+        data_points = HealthNote.objects.filter(admission=admission).filter(valueHigh__isnull=False, valueLow__isnull=False).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        value_high = [int(note.valueHigh) for note in data_points]
+        value_low = [int(note.valueLow) for note in data_points]
+        context = {
+            'labels': labels,
+            'value_high': value_high,
+            'value_low': value_low,
+            'metric': metric,
+            'admission': admission
+        }
+    else:  # ЧСС по умолчанию
+        data_points = HealthNote.objects.filter(admission=admission).exclude(hr_value__isnull=True).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        values = [note.hr_value for note in data_points]
+        context = {
+            'labels': labels,
+            'values': values,
+            'metric': metric,
+            'admission': admission
+        }
+
+    return render(request, 'accounts/analytics.html', context)
