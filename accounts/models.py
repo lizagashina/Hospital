@@ -75,7 +75,7 @@ class CustomUser(AbstractUser):
     position = models.CharField(max_length=100, verbose_name='Должность')
     departments = models.ManyToManyField(Department, blank=True, verbose_name='Отделения')
     employee_number = models.CharField(
-        max_length=10,
+        max_length=64,
         unique=True,
         verbose_name='Номер сотрудника',
         validators=[RegexValidator(r'^\d{1,10}$', 'Номер сотрудника должен содержать только цифры')]
