@@ -1,91 +1,42 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Детали записи</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .field {
-            margin-bottom: 15px;
-        }
-        .field label {
-            font-weight: bold;
-            display: block;
-        }
-        .field p {
-            margin: 5px 0 0 0;
-        }
-        .back-link {
-            margin-top: 30px;
-            display: inline-block;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1>Детали записи</h1>
+{% extends 'accounts/base.html' %}
 
-    <div class="field">
-        <label>Тип записи:</label>
-        <p>{{ note.get_note_type_display }}</p>
-    </div>
-
-    <div class="field">
-        <label>Дата и время создания:</label>
-        <p>{{ note.created_at|date:"d.m.Y H:i" }}</p>
-    </div>
-
-    {% if note.text %}
-    <div class="field">
-        <label>Текст:</label>
-        <p>{{ note.text }}</p>
-    </div>
-    {% endif %}
-
-    {% if note.valueHigh or note.valueLow %}
-    <div class="field">
-        <label>Артериальное давление:</label>
-        <p>
-            {{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}
-        </p>
-    </div>
-    {% endif %}
-
-    {% if note.hr_value %}
-    <div class="field">
-        <label>Пульс:</label>
-        <p>{{ note.hr_value }} уд/мин</p>
-    </div>
-    {% endif %}
-
-    {% if note.temperature_value %}
-    <div class="field">
-        <label>Температура тела:</label>
-        <p>{{ note.temperature_value }} °C</p>
-    </div>
-    {% endif %}
-
-    <a href="{% url 'notes' note.admission.id %}" class="back-link">← Назад к записям</a>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Детали записи</h2>
+    <a href="{% url 'notes' note.admission.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к записям
+    </a>
 </div>
-</body>
-</html>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">{{ note.get_note_type_display }}</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Дата и время:</dt>
+            <dd class="col-sm-9">{{ note.created_at|date:"d.m.Y H:i" }}</dd>
+
+            {% if note.text %}
+            <dt class="col-sm-3">Текст:</dt>
+            <dd class="col-sm-9">{{ note.text }}</dd>
+            {% endif %}
+
+            {% if note.valueHigh or note.valueLow %}
+            <dt class="col-sm-3">Артериальное давление:</dt>
+            <dd class="col-sm-9">{{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}</dd>
+            {% endif %}
+
+            {% if note.hr_value %}
+            <dt class="col-sm-3">Пульс:</dt>
+            <dd class="col-sm-9">{{ note.hr_value }} уд/мин</dd>
+            {% endif %}
+
+            {% if note.temperature_value %}
+            <dt class="col-sm-3">Температура:</dt>
+            <dd class="col-sm-9">{{ note.temperature_value }} °C</dd>
+            {% endif %}
+        </dl>
+    </div>
+</div>
+{% endblock %}
