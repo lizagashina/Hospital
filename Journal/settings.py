@@ -24,7 +24,7 @@ GIGDATA_API_KEY = os.getenv('GIGDATA_API_KEY')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-uckpb@!1jpb&#=&d2&(n+%1ise@arg87d58mbont-^5nf-i^tw'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     'www.история-болезни.рф',
     'xn--80ahclcogcndb5ad.xn--p1ai',
     'xn----btbmibaevuddulo2r.xn--p1ai',
+    '127.0.0.1',
 ]
 # Application definition
 

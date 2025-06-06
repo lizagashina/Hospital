@@ -5,6 +5,35 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.utils.text import slugify
+from django.contrib.auth.models import BaseUserManager
+from transliterate import translit
+
+
+class CustomUserManager(BaseUserManager):
+    def create_superuser(self, employee_number, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        # Генерируем username, если не предоставлен
+        if 'username' not in extra_fields:
+            full_name = extra_fields.get('full_name', '')
+            first_two_words = ' '.join(full_name.split()[:2])
+            extra_fields['username'] = slugify(first_two_words.replace(' ', '_').lower())
+
+        return self._create_user(employee_number, password, **extra_fields)
+
+    def _create_user(self, employee_number, password, **extra_fields):
+        if not employee_number:
+            raise ValueError('The Employee Number must be set')
+        user = self.model(employee_number=employee_number, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
 class Hospital(models.Model):
@@ -30,7 +59,7 @@ class Department(models.Model):
         return Patient.objects.filter(
             admissions__department=self,
             admissions__discharge_date__isnull=True,
-            hospital = self.hospital  # Добавляем фильтр по больнице
+            hospital=self.hospital  # Добавляем фильтр по больнице
         ).distinct()
 
     class Meta:
@@ -39,7 +68,9 @@ class Department(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+
 class CustomUser(AbstractUser):
+    objects = CustomUserManager()
     full_name = models.CharField(max_length=100, verbose_name='ФИО')
     position = models.CharField(max_length=100, verbose_name='Должность')
     departments = models.ManyToManyField(Department, blank=True, verbose_name='Отделения')
@@ -68,17 +99,31 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['full_name', 'position', 'phone_number']
 
     def save(self, *args, **kwargs):
-        # Генерируем username из первых двух слов ФИО
-        if not self.username:
-            first_two_words = ' '.join(self.full_name.split()[:2])
-            self.username = slugify(first_two_words.replace(' ', '_').lower())
+        if not self.username and self.full_name:
+            name_parts = self.full_name.split()
+            if len(name_parts) >= 2:
+                first_part = name_parts[0]
+                second_part = name_parts[1]
+                try:
+                    # Пробуем транслитерировать
+                    first_en = translit(first_part, 'ru', reversed=True)
+                    second_en = translit(second_part, 'ru', reversed=True)
+                    base_username = f"{first_en}_{second_en}"
+                except:
+                    # Если transliterate не установлен или ошибка
+                    base_username = f"{name_parts[0]}_{name_parts[1]}"
+            else:
+                base_username = name_parts[0] if name_parts else 'user'
 
-        # Убедимся, что username уникален
-        counter = 1
-        original_username = self.username
-        while CustomUser.objects.filter(username=self.username).exclude(pk=self.pk).exists():
-            self.username = f"{original_username}_{counter}"
-            counter += 1
+            # Очистка и приведение к нижнему регистру
+            self.username = re.sub(r'[^a-z0-9_]', '', base_username.lower())
+
+            # Уникальность username
+            original = self.username
+            counter = 1
+            while CustomUser.objects.filter(username=self.username).exclude(pk=self.pk).exists():
+                self.username = f"{original}_{counter}"
+                counter += 1
 
         super().save(*args, **kwargs)
 
@@ -87,7 +132,6 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name} ({self.employee_number})"
-
 
 
 class Patient(models.Model):
@@ -138,13 +182,11 @@ class Patient(models.Model):
     def has_active_admission(self):
         return self.admissions.filter(discharge_date__isnull=True).exists()
 
-
     height = models.PositiveSmallIntegerField(verbose_name='Рост (см)')
     weight = models.PositiveSmallIntegerField(verbose_name='Вес (кг)')
 
     def __str__(self):
         return f"{self.last_name} {self.first_name} {self.middle_name}"
-
 
     class Meta:
         constraints = [
@@ -204,7 +246,8 @@ class Admission(models.Model):
     severity = models.CharField(max_length=10, blank=True, choices=SEVERITY_CHOICES, verbose_name='Состояние')
     mind = models.CharField(max_length=10, blank=True, choices=MIND_CHOICES, verbose_name='Сознание')
     movement = models.CharField(max_length=10, blank=True, choices=MOVEMENT_CHOICES, verbose_name='Положение')
-    constitutions = models.CharField(max_length=10, blank=True, choices=CONSTITUTION_CHOICES, verbose_name='Тип конституции')
+    constitutions = models.CharField(max_length=10, blank=True, choices=CONSTITUTION_CHOICES,
+                                     verbose_name='Тип конституции')
     diagnosis = models.TextField(verbose_name='Диагноз')
     temperature = models.DecimalField(max_digits=3, blank=True, null=True, decimal_places=1, verbose_name='Температура')
     adhd = models.CharField(max_length=10, blank=True, verbose_name='Артериальное давление')
