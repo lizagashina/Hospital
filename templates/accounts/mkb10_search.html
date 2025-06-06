@@ -1,115 +1,116 @@
 {% extends 'accounts/base.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Поиск по классификатору МКБ-10</h2>
-        <button id="close-btn" class="btn btn-secondary">Закрыть</button>
-    </div>
-    
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="input-group">
-                <input type="text" id="mkb-search" class="form-control" 
-                       placeholder="Введите диагноз для поиска..." autocomplete="off">
-                <div class="input-group-append">
-                    <button id="search-btn" class="btn btn-primary">Поиск</button>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Поиск по классификатору МКБ-10</h2>
+            <button id="close-btn" class="btn btn-secondary">Закрыть</button>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" id="mkb-search" class="form-control"
+                           placeholder="Введите диагноз для поиска..." autocomplete="off">
+                    <div class="input-group-append">
+                        <button id="search-btn" class="btn btn-primary">Поиск</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div id="results-container" class="card" style="display: none;">
-        <div class="card-header">Результаты поиска</div>
-        <div class="card-body p-0">
-            <ul id="results-list" class="list-group list-group-flush"></ul>
+
+        <div id="results-container" class="card" style="display: none;">
+            <div class="card-header">Результаты поиска</div>
+            <div class="card-body p-0">
+                <ul id="results-list" class="list-group list-group-flush"></ul>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('mkb-search');
-    const searchBtn = document.getElementById('search-btn');
-    const resultsContainer = document.getElementById('results-container');
-    const resultsList = document.getElementById('results-list');
-    const closeBtn = document.getElementById('close-btn');
-    
-    // Функция для выполнения поиска
-    function performSearch() {
-        const query = searchInput.value.trim();
-        if (!query) return;
-        
-        fetch('', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: `query=${encodeURIComponent(query)}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            resultsList.innerHTML = '';
-            
-            if (data.suggestions && data.suggestions.length > 0) {
-                data.suggestions.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item list-group-item-action';
-                    li.innerHTML = `
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('mkb-search');
+            const searchBtn = document.getElementById('search-btn');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsList = document.getElementById('results-list');
+            const closeBtn = document.getElementById('close-btn');
+
+            // Функция для выполнения поиска
+            function performSearch() {
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                fetch('', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `query=${encodeURIComponent(query)}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsList.innerHTML = '';
+
+                        if (data.suggestions && data.suggestions.length > 0) {
+                            data.suggestions.forEach(item => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-action';
+                                li.innerHTML = `
                         <div class="d-flex justify-content-between">
                             <strong>${item.data.code}</strong>
                             <span>${item.value}</span>
                         </div>
                     `;
-                    
-                    li.addEventListener('click', function() {
-                        // Возвращаем выбранное значение в родительское окно
-                        if (window.opener) {
-                            window.opener.postMessage({
-                                mkb_code: item.data.code,
-                                mkb_name: item.value
-                            }, '*');
-                        }
-                        window.close();
-                    });
-                    
-                    resultsList.appendChild(li);
-                });
-                
-                resultsContainer.style.display = 'block';
-            } else {
-                resultsList.innerHTML = '<li class="list-group-item">Ничего не найдено</li>';
-                resultsContainer.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка поиска:', error);
-            resultsList.innerHTML = '<li class="list-group-item text-danger">Ошибка при выполнении поиска</li>';
-            resultsContainer.style.display = 'block';
-        });
-    }
-    
-    // Обработчики событий
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') performSearch();
-    });
-    
-    searchBtn.addEventListener('click', performSearch);
-    
-    closeBtn.addEventListener('click', function() {
-        window.close();
-    });
-});
-</script>
 
-<style>
-#results-list li {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-#results-list li:hover {
-    background-color: #f8f9fa;
-}
-</style>
+                                li.addEventListener('click', function () {
+                                    // Возвращаем выбранное значение в родительское окно
+                                    if (window.opener) {
+                                        window.opener.postMessage({
+                                            mkb_code: item.data.code,
+                                            mkb_name: item.value
+                                        }, '*');
+                                    }
+                                    window.close();
+                                });
+
+                                resultsList.appendChild(li);
+                            });
+
+                            resultsContainer.style.display = 'block';
+                        } else {
+                            resultsList.innerHTML = '<li class="list-group-item">Ничего не найдено</li>';
+                            resultsContainer.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка поиска:', error);
+                        resultsList.innerHTML = '<li class="list-group-item text-danger">Ошибка при выполнении поиска</li>';
+                        resultsContainer.style.display = 'block';
+                    });
+            }
+
+            // Обработчики событий
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            searchBtn.addEventListener('click', performSearch);
+
+            closeBtn.addEventListener('click', function () {
+                window.close();
+            });
+        });
+    </script>
+
+    <style>
+        #results-list li {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #results-list li:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
 {% endblock %}

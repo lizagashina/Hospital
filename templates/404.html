@@ -1,0 +1,131 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="error-container text-center">
+        <div class="error-header mb-5">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="error-logo">
+            </a>
+        </div>
+
+        <div class="error-card shadow-lg">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1 class="error-title">404</h1>
+            <h2 class="error-subtitle">Страница не найдена</h2>
+            <p class="error-text">
+                Запрашиваемая страница не существует или была перемещена.
+            </p>
+        </div>
+    </div>
+
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .error-logo {
+            height: 150px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .error-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .error-card {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border-top: 5px solid #dc3545;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 72px;
+            font-weight: 700;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .error-subtitle {
+            font-size: 24px;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .error-text {
+            font-size: 18px;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .error-actions .btn {
+            min-width: 200px;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 50px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .error-card {
+                padding: 30px 20px;
+            }
+
+            .error-title {
+                font-size: 60px;
+            }
+
+            .error-subtitle {
+                font-size: 20px;
+            }
+
+            .error-text {
+                font-size: 16px;
+            }
+
+            .error-actions {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .error-actions .btn {
+                width: 100%;
+                margin-bottom: 15px;
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-title {
+                font-size: 48px;
+            }
+
+            .error-subtitle {
+                font-size: 18px;
+            }
+
+            .error-actions .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+{% endblock %}

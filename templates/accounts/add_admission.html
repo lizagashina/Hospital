@@ -10,7 +10,6 @@
     <form method="post" class="form">
         {% csrf_token %}
 
-        <!-- Основные данные -->
         <div class="card mb-4">
             <div class="card-header">Основные данные</div>
             <div class="card-body">
@@ -25,7 +24,6 @@
             </div>
         </div>
 
-        <!-- Диагноз и анамнез -->
         <div class="card mb-4">
             <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
                  onclick="togglePanel('diagnosisPanel','diagnosisIcon')">
@@ -55,7 +53,6 @@
             </div>
         </div>
 
-        <!-- Опрос по системам органов -->
         <div class="card mb-4">
             <div class="card-header" id="systemsHeading" style="cursor: pointer;"
                  onclick="togglePanel('systemsPanel', 'systemsIcon')">

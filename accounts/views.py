@@ -11,9 +11,17 @@ from django.db.models import Max
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import render
+from django.views.decorators.csrf import requires_csrf_token
+from django.template import RequestContext
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCreateForm, AdmissionCreateForm
 from .models import Patient, Department, Admission, HealthNote
+
+
+@requires_csrf_token
+def custom_404_view(request, exception):
+    return render(request, '404.html', status=404)
 
 
 # Декоратор для проверки принадлежности к больнице

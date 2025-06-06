@@ -1,42 +1,42 @@
 {% extends 'accounts/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Детали записи</h2>
-    <a href="{% url 'notes' note.admission.id %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Назад к записям
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">{{ note.get_note_type_display }}</h5>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Детали записи</h2>
+        <a href="{% url 'notes' note.admission.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к записям
+        </a>
     </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Дата и время:</dt>
-            <dd class="col-sm-9">{{ note.created_at|date:"d.m.Y H:i" }}</dd>
 
-            {% if note.text %}
-            <dt class="col-sm-3">Текст:</dt>
-            <dd class="col-sm-9">{{ note.text }}</dd>
-            {% endif %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">{{ note.get_note_type_display }}</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Дата и время:</dt>
+                <dd class="col-sm-9">{{ note.created_at|date:"d.m.Y H:i" }}</dd>
 
-            {% if note.valueHigh or note.valueLow %}
-            <dt class="col-sm-3">Артериальное давление:</dt>
-            <dd class="col-sm-9">{{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}</dd>
-            {% endif %}
+                {% if note.text %}
+                    <dt class="col-sm-3">Текст:</dt>
+                    <dd class="col-sm-9">{{ note.text }}</dd>
+                {% endif %}
 
-            {% if note.hr_value %}
-            <dt class="col-sm-3">Пульс:</dt>
-            <dd class="col-sm-9">{{ note.hr_value }} уд/мин</dd>
-            {% endif %}
+                {% if note.valueHigh or note.valueLow %}
+                    <dt class="col-sm-3">Артериальное давление:</dt>
+                    <dd class="col-sm-9">{{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}</dd>
+                {% endif %}
 
-            {% if note.temperature_value %}
-            <dt class="col-sm-3">Температура:</dt>
-            <dd class="col-sm-9">{{ note.temperature_value }} °C</dd>
-            {% endif %}
-        </dl>
+                {% if note.hr_value %}
+                    <dt class="col-sm-3">Пульс:</dt>
+                    <dd class="col-sm-9">{{ note.hr_value }} уд/мин</dd>
+                {% endif %}
+
+                {% if note.temperature_value %}
+                    <dt class="col-sm-3">Температура:</dt>
+                    <dd class="col-sm-9">{{ note.temperature_value }} °C</dd>
+                {% endif %}
+            </dl>
+        </div>
     </div>
-</div>
 {% endblock %}

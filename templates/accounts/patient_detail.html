@@ -1,28 +1,36 @@
 {% extends 'accounts/base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Карточка пациента: {{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</h2>
-        <div>
+    <div class="header-container mb-4">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="logo">
+            </a>
+            <div class="header-text">
+                <h2 class="mb-1">{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</h2>
+                <h4 class="text-muted">Карточка пациента</h4>
+            </div>
+        </div>
+        <div class="header-actions">
             {% if active_admission %}
                 <a href="{% url 'department' active_admission.department.id %}"
-                   class="btn btn-outline-secondary">
-                    ← Назад в отделение
+                   class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-door-open mr-1"></i> В отделение
                 </a>
             {% endif %}
-            <a href="{% url 'patients' %}" class="btn btn-secondary">Назад к списку</a>
+            <a href="{% url 'patients' %}" class="btn btn-secondary mr-2">
+                <i class="fas fa-search mr-1"></i> Поиск
+            </a>
+            {% if not active_admission %}
+                <a href="{% url 'add_admission' patient.id %}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-1"></i> Поступление
+                </a>
+            {% endif %}
         </div>
     </div>
-    {% if not active_admission %}
-        <div class="text-right mb-3">
-            <a href="{% url 'add_admission' patient.id %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Новое поступление
-            </a>
-        </div>
-    {% endif %}
 
-    <!-- Основная информация о пациенте -->
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Основные данные</span>
@@ -31,7 +39,6 @@
             </button>
         </div>
         <div class="card-body">
-            <!-- Форма редактирования (изначально скрыта) -->
             <form id="patientForm" method="post" action="{% url 'edit_patient' patient.id %}" style="display: none;">
                 {% csrf_token %}
                 <div class="row">
@@ -128,7 +135,6 @@
         </div>
     </div>
 
-    <!-- Текущее поступление -->
     {% if active_admission %}
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -184,7 +190,6 @@
         </div>
     {% endif %}
 
-    <!-- Архив поступлений -->
     {% if past_admissions.exists %}
         <div id="admissions-archive" class="card mb-4">
             <div class="card-header">История поступлений</div>
@@ -209,6 +214,82 @@
             </div>
         </div>
     {% endif %}
+    <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            height: 150px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-actions .btn {
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .patient-info dt {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .patient-info dd {
+            margin-bottom: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .patient-info dt,
+            .patient-info dd {
+                padding: 0.25rem;
+            }
+        }
+    </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const editBtn = document.getElementById('editPatientBtn');
@@ -219,6 +300,7 @@
             editBtn.addEventListener('click', function () {
                 form.style.display = 'block';
                 view.style.display = 'none';
+                window.scrollTo({top: form.offsetTop - 20, behavior: 'smooth'});
             });
 
             cancelBtn.addEventListener('click', function () {

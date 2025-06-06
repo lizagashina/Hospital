@@ -27,13 +27,14 @@ GIGDATA_API_KEY = os.getenv('GIGDATA_API_KEY')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'РёСЃС‚РѕСЂРёСЏ-Р±РѕР»РµР·РЅРё.СЂС„',
     'www.РёСЃС‚РѕСЂРёСЏ-Р±РѕР»РµР·РЅРё.СЂС„',
     'xn--80ahclcogcndb5ad.xn--p1ai',
     'xn----btbmibaevuddulo2r.xn--p1ai',
+    '127.0.0.1',
 ]
 # Application definition
 
