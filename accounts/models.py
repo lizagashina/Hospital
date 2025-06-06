@@ -305,3 +305,22 @@ class Admission(models.Model):
 
     def __str__(self):
         return f"{self.patient} - {self.admission_date.date()}"
+
+
+class HealthNote(models.Model):
+    NOTE_TYPE_CHOICES = [
+        ('prescription', 'Назначение'),
+        ('research', 'Исследование'),
+        ('info', 'Запись состояния пациента'),
+        ('note', 'Запись истории болезни'),
+    ]
+
+    admission = models.ForeignKey(Admission, on_delete=models.CASCADE, related_name='entry_notes')
+    note_type = models.CharField(max_length=20, choices=NOTE_TYPE_CHOICES)
+    text = models.TextField(blank=True, null=True)
+    valueHigh = models.CharField(max_length=3, blank=True, null=True)
+    valueLow = models.CharField(max_length=3, blank=True, null=True)
+    hr_value = models.PositiveIntegerField(blank=True, null=True)
+    temperature_value = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+

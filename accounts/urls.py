@@ -17,4 +17,7 @@ urlpatterns = [
     path('admissions/add/<int:patient_id>/', views.add_admission_view, name='add_admission'),
     path('mkb10-search/', views.mkb10_search_view, name='mkb10_search'),
     path('patients/<int:patient_id>/edit/', views.edit_patient_view, name='edit_patient'),
+    path('admissions/<int:admission_id>/notes/', views.notes_view, name='notes'),
+    path('admissions/<int:admission_id>/notes/add/', views.add_note_view, name='add_note'),
+    path('notes/<int:note_id>/', views.note_detail_view, name='note_detail'),
 ]

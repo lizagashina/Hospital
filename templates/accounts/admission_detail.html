@@ -3,6 +3,7 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
+        <a href="{% url 'notes' admission.id %}" class="btn btn-secondary">Записи о пациенте</a>
         <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-secondary">Назад к пациенту</a>
     </div>
 

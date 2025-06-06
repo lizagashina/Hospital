@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали записи</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .field {
+            margin-bottom: 15px;
+        }
+        .field label {
+            font-weight: bold;
+            display: block;
+        }
+        .field p {
+            margin: 5px 0 0 0;
+        }
+        .back-link {
+            margin-top: 30px;
+            display: inline-block;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Детали записи</h1>
+
+    <div class="field">
+        <label>Тип записи:</label>
+        <p>{{ note.get_note_type_display }}</p>
+    </div>
+
+    <div class="field">
+        <label>Дата и время создания:</label>
+        <p>{{ note.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+
+    {% if note.text %}
+    <div class="field">
+        <label>Текст:</label>
+        <p>{{ note.text }}</p>
+    </div>
+    {% endif %}
+
+    {% if note.valueHigh or note.valueLow %}
+    <div class="field">
+        <label>Артериальное давление:</label>
+        <p>
+            {{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}
+        </p>
+    </div>
+    {% endif %}
+
+    {% if note.hr_value %}
+    <div class="field">
+        <label>Пульс:</label>
+        <p>{{ note.hr_value }} уд/мин</p>
+    </div>
+    {% endif %}
+
+    {% if note.temperature_value %}
+    <div class="field">
+        <label>Температура тела:</label>
+        <p>{{ note.temperature_value }} °C</p>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'notes' note.admission.id %}" class="back-link">← Назад к записям</a>
+</div>
+</body>
+</html>
