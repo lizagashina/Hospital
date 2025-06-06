@@ -1,0 +1,79 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Записи пациента</h2>
+    <div>
+        <a href="{% url 'admission_detail' admission.id %}" class="btn btn-outline-secondary mr-2">
+            <i class="fas fa-arrow-left"></i> Назад
+        </a>
+        {% if not admission.discharge_date %}
+        <a href="{% url 'add_note' admission.id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Создать
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if notes %}
+<div class="card">
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for note in notes %}
+            <a href="{% url 'note_detail' note.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h5 class="mb-0 text-primary">{{ note.get_note_type_display }}</h5>
+                            <span class="badge badge-light text-dark ml-2">
+                                <i class="far fa-clock mr-1"></i>{{ note.created_at|date:"d.m.Y H:i" }}
+                            </span>
+                        </div>
+                        {% if note.text %}
+                        <p class="mb-1">{{ note.text|truncatechars:100 }}</p>
+                        {% endif %}
+                        <div class="d-flex mt-2">
+                            {% if note.valueHigh or note.valueLow %}
+                            <span class="badge badge-info mr-2">
+                                <i class="fas fa-heartbeat mr-1"></i>{{ note.valueHigh|default:"–" }}/{{ note.valueLow|default:"–" }}
+                            </span>
+                            {% endif %}
+                            {% if note.hr_value %}
+                            <span class="badge badge-info mr-2">
+                                <i class="fas fa-heart mr-1"></i>{{ note.hr_value }} уд/мин
+                            </span>
+                            {% endif %}
+                            {% if note.temperature_value %}
+                            <span class="badge badge-info">
+                                <i class="fas fa-thermometer-half mr-1"></i>{{ note.temperature_value }} °C
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Нет записей для отображения
+</div>
+{% endif %}
+
+<style>
+    .list-group-item {
+        transition: all 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(2px);
+    }
+    .badge-light {
+        background-color: #f1f1f1;
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+    }
+</style>
+{% endblock %}

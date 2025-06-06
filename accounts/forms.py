@@ -20,7 +20,10 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
         label='Номер сотрудника или логин',
-        widget=forms.TextInput(attrs={'autofocus': True})
+        widget=forms.TextInput(attrs={
+            'autofocus': True,
+            'maxlength': 64
+        })
     )
 
 

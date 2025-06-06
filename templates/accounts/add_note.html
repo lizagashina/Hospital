@@ -1,0 +1,99 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Создание новой записи</h2>
+    <a href="{% url 'notes' admission.id %}" class="btn btn-secondary">Назад</a>
+</div>
+
+<div class="card">
+    <div class="card-header">Тип записи</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="note_type">Тип записи:</label>
+                <select class="form-control" id="note_type" name="note_type" required>
+                    <option value="info" selected>Состояние пациента</option>
+                    <option value="prescription">Назначение</option>
+                    <option value="research">Исследование</option>
+                    <option value="note">Запись</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="text-field">
+                <label for="text">Текст:</label>
+                <textarea class="form-control" id="text" name="text" rows="4"></textarea>
+            </div>
+
+            <div class="card mt-3" id="patient-status-fields">
+                <div class="card-header">Параметры состояния пациента</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="valueHigh">Верхнее давление:</label>
+                                <input type="number" class="form-control" id="valueHigh" name="valueHigh" min="0" max="300">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="valueLow">Нижнее давление:</label>
+                                <input type="number" class="form-control" id="valueLow" name="valueLow" min="0" max="200">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="hr_value">Пульс (уд/мин):</label>
+                                <input type="number" class="form-control" id="hr_value" name="hr_value" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="temperature_value">Температура (°C):</label>
+                                <input type="number" class="form-control" id="temperature_value" name="temperature_value" step="0.1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить запись
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const noteTypeSelect = document.getElementById('note_type');
+    const textField = document.getElementById('text-field');
+    const patientFields = document.getElementById('patient-status-fields');
+
+    function updateFieldsVisibility() {
+        const noteType = noteTypeSelect.value;
+        
+        if (noteType === 'info') {
+            textField.style.display = 'none';
+            patientFields.style.display = 'block';
+            document.getElementById('text').required = false;
+        } else {
+            textField.style.display = 'block';
+            patientFields.style.display = 'none';
+            document.getElementById('text').required = true;
+            document.querySelectorAll('#patient-status-fields input').forEach(input => {
+                input.required = false;
+            });
+        }
+    }
+
+    updateFieldsVisibility();
+    noteTypeSelect.addEventListener('change', updateFieldsVisibility);
+});
+</script>
+{% endblock %}

@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCreateForm, AdmissionCreateForm
-from .models import Patient, Department, Admission
+from .models import Patient, Department, Admission, HealthNote
 
 
 # Декоратор для проверки принадлежности к больнице
@@ -305,3 +305,118 @@ def edit_patient_view(request, patient_id):
         'active_admission': active_admission,
         'past_admissions': past_admissions
     })
+
+
+@login_required
+@hospital_required
+def notes_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id, patient__hospital=request.user.hospital)
+    notes = admission.entry_notes.all().order_by('-created_at')
+    return render(request, 'accounts/notes.html', {
+        'admission': admission,
+        'notes': notes
+    })
+
+
+@login_required
+@hospital_required
+def add_note_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id, patient__hospital=request.user.hospital)
+
+    if request.method == 'POST':
+        # Извлекаем данные из формы
+        note_type = request.POST.get('note_type')
+        text = request.POST.get('text')
+        value_high = request.POST.get('valueHigh') or None
+        value_low = request.POST.get('valueLow') or None
+        hr_value = request.POST.get('hr_value') or None
+        temperature_value = request.POST.get('temperature_value') or None
+
+        # Преобразование типов, если нужно
+        try:
+            hr_value = int(hr_value) if hr_value else None
+        except ValueError:
+            hr_value = None
+
+        try:
+            temperature_value = float(temperature_value) if temperature_value else None
+        except ValueError:
+            temperature_value = None
+
+        # Сохраняем новую заметку
+        HealthNote.objects.create(
+            admission=admission,
+            note_type=note_type,
+            text=text,
+            valueHigh=value_high,
+            valueLow=value_low,
+            hr_value=hr_value,
+            temperature_value=temperature_value
+        )
+
+        return redirect('notes', admission_id=admission.id)
+
+    return render(request, 'accounts/add_note.html', {
+        'admission': admission
+    })
+
+
+@login_required
+@hospital_required
+def notes_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id, patient__hospital=request.user.hospital)
+    notes = admission.entry_notes.order_by('-created_at')  # Получаем записи, связанные с поступлением
+
+    return render(request, 'accounts/notes.html', {
+        'admission': admission,
+        'notes': notes
+    })
+
+@login_required
+@hospital_required
+def note_detail_view(request, note_id):
+    note = get_object_or_404(HealthNote, id=note_id, admission__patient__hospital=request.user.hospital)
+    return render(request, 'accounts/note_detail.html', {
+        'note': note
+    })
+
+from django.shortcuts import render, get_object_or_404
+
+def analytics_view(request, admission_id):
+    admission = get_object_or_404(Admission, id=admission_id)
+    metric = request.GET.get('metric', 'hr')  # по умолчанию ЧСС
+
+    if metric == 'temp':
+        data_points = HealthNote.objects.filter(admission=admission).exclude(temperature_value__isnull=True).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        values = [float(note.temperature_value) for note in data_points]
+        context = {
+            'labels': labels,
+            'values': values,
+            'metric': metric,
+            'admission': admission
+        }
+    elif metric == 'bp':
+        data_points = HealthNote.objects.filter(admission=admission).filter(valueHigh__isnull=False, valueLow__isnull=False).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        value_high = [int(note.valueHigh) for note in data_points]
+        value_low = [int(note.valueLow) for note in data_points]
+        context = {
+            'labels': labels,
+            'value_high': value_high,
+            'value_low': value_low,
+            'metric': metric,
+            'admission': admission
+        }
+    else:  # ЧСС по умолчанию
+        data_points = HealthNote.objects.filter(admission=admission).exclude(hr_value__isnull=True).order_by('created_at')
+        labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
+        values = [note.hr_value for note in data_points]
+        context = {
+            'labels': labels,
+            'values': values,
+            'metric': metric,
+            'admission': admission
+        }
+
+    return render(request, 'accounts/analytics.html', context)
