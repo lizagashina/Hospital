@@ -32,7 +32,7 @@ h1, h2, h3, h4 {
 }
 
 a {
-    color: #17a2b8;
+    color: #ffffff;
     text-decoration: none;
 }
 
@@ -71,6 +71,7 @@ a:hover {
     background-color: #138496 !important; /* или любой нужный тебе цвет */
     color: white !important;
 }
+
 
 .btn-sm {
     color: #17a2b8;
