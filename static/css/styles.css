@@ -80,7 +80,7 @@ a:hover {
 .btn-sm:hover {
     background-color: #138496 !important; /* или любой нужный тебе цвет */
     color: white !important;
-        border-color: #138496;
+    border-color: #138496;
 }
 
 .btn-info {

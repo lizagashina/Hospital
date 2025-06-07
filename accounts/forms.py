@@ -17,6 +17,7 @@ class CustomUserCreationForm(UserCreationForm):
             'full_name': forms.TextInput(attrs={'autofocus': True}),
         }
 
+
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
         label='Номер сотрудника или логин',
@@ -59,7 +60,6 @@ class AdmissionCreateForm(forms.ModelForm):
         }
 
 
-
 class PatientCreateForm(forms.ModelForm):
     snils = forms.CharField(
         max_length=14,
@@ -77,11 +77,9 @@ class PatientCreateForm(forms.ModelForm):
         snils = self.cleaned_data.get('snils', '')
         cleaned_snils = re.sub(r'[^\d]', '', snils)
 
-        # Проверка формата при вводе
         if not re.match(r'^\d{3}-\d{3}-\d{3} \d{2}$', snils):
             raise forms.ValidationError('Введите СНИЛС в формате XXX-XXX-XXX XX')
 
-        # Проверка уникальности СНИЛС в больнице
         if self.hospital and Patient.objects.filter(snils=cleaned_snils, hospital=self.hospital).exists():
             raise forms.ValidationError('Пациент с таким СНИЛС уже существует в этой больнице')
 
@@ -102,6 +100,5 @@ class PatientCreateForm(forms.ModelForm):
         self.hospital = kwargs.pop('hospital', None)
         super().__init__(*args, **kwargs)
 
-        # Для редактирования делаем СНИЛС необязательным
         if self.instance.pk:
             self.fields['snils'].required = False
