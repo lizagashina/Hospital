@@ -1,31 +1,43 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Работа с пациентами</h2>
-        <div>
-            <a href="{% url 'home' %}" class="btn btn-secondary">Назад</a>
-            {% if user.hospital %}
-                <a href="{% url 'add_patient' %}" class="btn btn-primary">Добавить пациента</a>
-            {% endif %}
+<div class="header-container mb-4">
+    <div class="header-content">
+        <a href="{% url 'home' %}" class="logo-link">
+            <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="logo">
+        </a>
+        <div class="header-text">
+            <h2 class="mb-1">База данных пациентов</h2>
+            <h4 class="text-muted">"{{ user.hospital.name }}"</h4>
         </div>
     </div>
+<div class="header-actions">
+    <input type="button" onclick="window.location.href='{% url 'home' %}'"
+           class="btn btn-outline-secondary mr-2" value="Назад">
+    {% if user.hospital %}
+        <input type="button" onclick="window.location.href='{% url 'add_patient' %}'"
+               class="btn btn-primary" value="Добавить пациента">
+    {% endif %}
+</div>
+</div>
 
-    {% if not user.hospital %}
-    <div class="alert alert-warning">
-        Ваша учетная запись не привязана к больнице. Обратитесь к администратору.
-    </div>
+{% if not user.hospital %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    Ваша учетная запись не привязана к больнице. Обратитесь к администратору.
+</div>
 {% else %}
 
-
-    <!-- Кнопка для отображения панели поиска -->
-    <button class="btn btn-info mb-3" type="button" data-toggle="collapse" data-target="#searchPanel">
-        Поиск пациентов
-    </button>
-
-    <!-- Панель поиска -->
-    <div class="collapse mb-4" id="searchPanel">
-        <div class="card card-body">
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Поиск пациентов</h5>
+        <button class="btn btn-light btn-sm" type="button" data-toggle="collapse" data-target="#searchPanel">
+            <i class="fas fa-search mr-1"></i> Поиск
+        </button>
+    </div>
+    <div class="collapse show" id="searchPanel">
+        <div class="card-body">
             <form method="get" class="form">
                 <input type="hidden" name="hospital_id" value="{{ user.hospital.id }}">
                 <div class="row">
@@ -70,31 +82,42 @@
                 </div>
 
                 <div class="text-right">
-                    <button type="submit" class="btn btn-primary">Искать</button>
-                    <a href="{% url 'patients' %}" class="btn btn-outline-secondary">Сбросить</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search mr-1"></i> Искать
+                    </button>
+                    <a href="{% url 'patients' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo mr-1"></i> Сбросить
+                    </a>
                 </div>
             </form>
         </div>
     </div>
+</div>
 
-    <!-- Таблица результатов -->
-    {% if search_performed %}
+{% if search_performed %}
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Результаты поиска</h5>
+    </div>
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="thead-dark">
-                <tr>
-                    <th>ФИО</th>
-                    <th>СНИЛС</th>
-                    <th>Дата рождения</th>
-                    <th>Статус</th>
-                    <th>Действия</th>
-                </tr>
+            <table class="table table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ФИО</th>
+                        <th>СНИЛС</th>
+                        <th>Дата рождения</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {% if patients %}
-                    {% for patient in patients %}
+                    {% if patients %}
+                        {% for patient in patients %}
                         <tr>
-                            <td>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</td>
+                            <td>
+                                <strong>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</strong>
+                            </td>
                             <td>{{ patient.formatted_snils }}</td>
                             <td>{{ patient.birth_date|date:"d.m.Y" }}</td>
                             <td>
@@ -106,23 +129,105 @@
                             </td>
                             <td>
                                 <a href="{% url 'patient_detail' patient.id %}" class="btn btn-sm btn-info">
-                                    Карточка
+                                    <i class="fas fa-file-alt mr-1"></i> Карточка
                                 </a>
                             </td>
                         </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center">Пациенты не найдены</td>
-                    </tr>
-                {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-user-times fa-2x text-muted mb-2"></i>
+                                <p class="h5">Пациенты не найдены</p>
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
-    {% else %}
-        <div class="alert alert-info">
-            Введите параметры поиска и нажмите "Искать" для отображения списка пациентов
-        </div>
-    {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info text-center">
+    <i class="fas fa-info-circle fa-2x mb-3"></i>
+    <p class="h5">Введите параметры поиска для отображения списка пациентов</p>
+</div>
 {% endif %}
+{% endif %}
+
+<style>
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .logo {
+        height: 150px;
+        width: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+        transform: scale(1.05);
+    }
+
+    .header-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        border-top: none;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    @media (max-width: 768px) {
+        .header-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .logo {
+            height: 60px;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
 {% endblock %}

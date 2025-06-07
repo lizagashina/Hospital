@@ -11,12 +11,19 @@ from django.db.models import Max
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import render
+from django.views.decorators.csrf import requires_csrf_token
+from django.template import RequestContext
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, PatientCreateForm, AdmissionCreateForm
 from .models import Patient, Department, Admission, HealthNote
 
 
-# Декоратор для проверки принадлежности к больнице
+@requires_csrf_token
+def custom_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+
 def hospital_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.hospital:
@@ -90,10 +97,9 @@ def logout_view(request):
 @login_required
 @hospital_required
 def home_view(request):
-    # Только отделения текущей больницы
     departments = Department.objects.filter(hospital=request.user.hospital)
     context = {
-        'departments': departments,  # или user_departments
+        'departments': departments,
         'hospital': request.user.hospital
     }
     return render(request, 'accounts/home.html', context)
@@ -107,8 +113,6 @@ def department_view(request, department_id):
         id=department_id,
         hospital=request.user.hospital
     )
-    patients = department.get_current_patients()
-    # Проверяем, что пользователь имеет доступ к этому отделению
     if not request.user.departments.filter(id=department_id).exists():
         return redirect('home')
     patients = department.get_current_patients()
@@ -121,7 +125,6 @@ def department_view(request, department_id):
 @login_required
 @hospital_required
 def patients_view(request):
-    # Фильтрация пациентов по больнице
     patients = Patient.objects.filter(hospital=request.user.hospital).annotate(
         last_admission_date=Max('admissions__admission_date')
     ).order_by('-last_admission_date')
@@ -161,13 +164,12 @@ def add_patient_view(request):
         patient_form = PatientCreateForm(request.POST, hospital=request.user.hospital)
         if patient_form.is_valid():
             patient = patient_form.save(commit=False)
-            patient.hospital = request.user.hospital  # Привязываем к больнице
+            patient.hospital = request.user.hospital
             patient.save()
             return redirect('add_admission', patient_id=patient.id)
     else:
         patient_form = PatientCreateForm(hospital=request.user.hospital)
 
-    # Передаем больницу в форму для валидации СНИЛС
     patient_form.hospital = request.user.hospital
     return render(request, 'accounts/add_patient.html', {'patient_form': patient_form})
 
@@ -190,7 +192,7 @@ def add_admission_view(request, patient_id):
     return render(request, 'accounts/add_admission.html', {
         'admission_form': admission_form,
         'patient': patient,
-        'is_existing_patient': True  # Флаг для изменения заголовка
+        'is_existing_patient': True
     })
 
 
@@ -231,7 +233,7 @@ def patient_detail_view(request, patient_id):
         'patient': patient,
         'active_admission': active_admission,
         'past_admissions': past_admissions,
-        'patient_form': patient_form  # Добавляем форму в контекст
+        'patient_form': patient_form
     })
 
 
@@ -272,9 +274,7 @@ def edit_patient_view(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id, hospital=request.user.hospital)
 
     if request.method == 'POST':
-        # Обработка данных формы
         data = request.POST.copy()
-        # Очищаем СНИЛС от форматирования перед сохранением
         if 'snils' in data:
             data['snils'] = re.sub(r'[^\d]', '', data['snils'])
 
@@ -293,10 +293,8 @@ def edit_patient_view(request, patient_id):
             patient.save()
             return redirect('patient_detail', patient_id=patient.id)
         except ValidationError as e:
-            # Обработка ошибок валидации
             pass
 
-    # Получаем текущие данные о поступлениях для контекста
     active_admission = patient.admissions.filter(discharge_date__isnull=True).first()
     past_admissions = patient.admissions.filter(discharge_date__isnull=False).order_by('-admission_date')
 
@@ -324,7 +322,6 @@ def add_note_view(request, admission_id):
     admission = get_object_or_404(Admission, id=admission_id, patient__hospital=request.user.hospital)
 
     if request.method == 'POST':
-        # Извлекаем данные из формы
         note_type = request.POST.get('note_type')
         text = request.POST.get('text')
         value_high = request.POST.get('valueHigh') or None
@@ -332,7 +329,6 @@ def add_note_view(request, admission_id):
         hr_value = request.POST.get('hr_value') or None
         temperature_value = request.POST.get('temperature_value') or None
 
-        # Преобразование типов, если нужно
         try:
             hr_value = int(hr_value) if hr_value else None
         except ValueError:
@@ -343,7 +339,6 @@ def add_note_view(request, admission_id):
         except ValueError:
             temperature_value = None
 
-        # Сохраняем новую заметку
         HealthNote.objects.create(
             admission=admission,
             note_type=note_type,
@@ -372,6 +367,7 @@ def notes_view(request, admission_id):
         'notes': notes
     })
 
+
 @login_required
 @hospital_required
 def note_detail_view(request, note_id):
@@ -380,14 +376,17 @@ def note_detail_view(request, note_id):
         'note': note
     })
 
+
 from django.shortcuts import render, get_object_or_404
+
 
 def analytics_view(request, admission_id):
     admission = get_object_or_404(Admission, id=admission_id)
     metric = request.GET.get('metric', 'hr')  # по умолчанию ЧСС
 
     if metric == 'temp':
-        data_points = HealthNote.objects.filter(admission=admission).exclude(temperature_value__isnull=True).order_by('created_at')
+        data_points = HealthNote.objects.filter(admission=admission).exclude(temperature_value__isnull=True).order_by(
+            'created_at')
         labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
         values = [float(note.temperature_value) for note in data_points]
         context = {
@@ -397,7 +396,9 @@ def analytics_view(request, admission_id):
             'admission': admission
         }
     elif metric == 'bp':
-        data_points = HealthNote.objects.filter(admission=admission).filter(valueHigh__isnull=False, valueLow__isnull=False).order_by('created_at')
+        data_points = HealthNote.objects.filter(admission=admission).filter(valueHigh__isnull=False,
+                                                                            valueLow__isnull=False).order_by(
+            'created_at')
         labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
         value_high = [int(note.valueHigh) for note in data_points]
         value_low = [int(note.valueLow) for note in data_points]
@@ -408,8 +409,9 @@ def analytics_view(request, admission_id):
             'metric': metric,
             'admission': admission
         }
-    else:  # ЧСС по умолчанию
-        data_points = HealthNote.objects.filter(admission=admission).exclude(hr_value__isnull=True).order_by('created_at')
+    else:
+        data_points = HealthNote.objects.filter(admission=admission).exclude(hr_value__isnull=True).order_by(
+            'created_at')
         labels = [note.created_at.strftime("%d.%m %H:%M") for note in data_points]
         values = [note.hr_value for note in data_points]
         context = {

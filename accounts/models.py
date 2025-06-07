@@ -19,7 +19,6 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        # Генерируем username, если не предоставлен
         if 'username' not in extra_fields:
             full_name = extra_fields.get('full_name', '')
             first_two_words = ' '.join(full_name.split()[:2])
@@ -59,11 +58,11 @@ class Department(models.Model):
         return Patient.objects.filter(
             admissions__department=self,
             admissions__discharge_date__isnull=True,
-            hospital=self.hospital  # Добавляем фильтр по больнице
+            hospital=self.hospital
         ).distinct()
 
     class Meta:
-        ordering = ['hospital', 'name']  # Правильный ordering
+        ordering = ['hospital', 'name']
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -94,7 +93,6 @@ class CustomUser(AbstractUser):
         related_name='employees'
     )
 
-    # Убираем username из обязательных полей
     USERNAME_FIELD = 'employee_number'
     REQUIRED_FIELDS = ['full_name', 'position', 'phone_number']
 
@@ -105,20 +103,16 @@ class CustomUser(AbstractUser):
                 first_part = name_parts[0]
                 second_part = name_parts[1]
                 try:
-                    # Пробуем транслитерировать
                     first_en = translit(first_part, 'ru', reversed=True)
                     second_en = translit(second_part, 'ru', reversed=True)
                     base_username = f"{first_en}_{second_en}"
                 except:
-                    # Если transliterate не установлен или ошибка
                     base_username = f"{name_parts[0]}_{name_parts[1]}"
             else:
                 base_username = name_parts[0] if name_parts else 'user'
 
-            # Очистка и приведение к нижнему регистру
             self.username = re.sub(r'[^a-z0-9_]', '', base_username.lower())
 
-            # Уникальность username
             original = self.username
             counter = 1
             while CustomUser.objects.filter(username=self.username).exclude(pk=self.pk).exists():
@@ -165,7 +159,6 @@ class Patient(models.Model):
 
     def clean(self):
         super().clean()
-        # Очищаем СНИЛС от всех символов, кроме цифр
         if self.snils:
             cleaned_snils = re.sub(r'[^\d]', '', self.snils)
             if len(cleaned_snils) != 11:
@@ -173,7 +166,6 @@ class Patient(models.Model):
             self.snils = cleaned_snils
 
     def formatted_snils(self):
-        """Метод для отображения СНИЛС в стандартном формате"""
         if len(self.snils) == 11:
             return f"{self.snils[:3]}-{self.snils[3:6]}-{self.snils[6:9]} {self.snils[9:]}"
         return self.snils
@@ -323,4 +315,3 @@ class HealthNote(models.Model):
     hr_value = models.PositiveIntegerField(blank=True, null=True)
     temperature_value = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-

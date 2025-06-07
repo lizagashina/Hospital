@@ -20,6 +20,6 @@ urlpatterns = [
     path('admissions/<int:admission_id>/notes/', views.notes_view, name='notes'),
     path('admissions/<int:admission_id>/notes/add/', views.add_note_view, name='add_note'),
     path('notes/<int:note_id>/', views.note_detail_view, name='note_detail'),
-path('admissions/<int:admission_id>/analytics/', views.analytics_view, name='analytics'),
+    path('admissions/<int:admission_id>/analytics/', views.analytics_view, name='analytics'),
 
 ]

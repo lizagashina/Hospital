@@ -1,21 +1,33 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Поступление пациента: {{ admission.patient.full_name }}</h2>
-        <div>
-            <a href="{% url 'analytics' admission.id %}" class="btn btn-primary">Аналитика</a>
-            <a href="{% url 'notes' admission.id %}" class="btn btn-primary">Записи о пациенте</a>
-            <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-outline-secondary mr-2">Назад к
-                пациенту</a>
+    <div class="header-container mb-4">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="logo">
+            </a>
+            <div class="header-text">
+                <h2 class="mb-1">{{ admission.patient.full_name }}</h2>
+                <h4 class="text-muted">Поступление пациента</h4>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'analytics' admission.id %}" class="btn btn-primary mr-2">
+                <i class="fas fa-chart-line mr-1"></i> Аналитика
+            </a>
+            <a href="{% url 'notes' admission.id %}" class="btn btn-primary mr-2">
+                <i class="fas fa-notes-medical mr-1"></i> Записи
+            </a>
+            <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> К пациенту
+            </a>
         </div>
     </div>
 
 
     <div class="row">
-        <!-- Блок с данными пациента -->
         <div class="col-md-12">
-            <!-- Основные детали поступления -->
             <div class="card mb-4">
                 <div class="card-header">Основные детали поступления</div>
                 <div class="card-body">
@@ -42,7 +54,6 @@
                 </div>
             </div>
 
-            <!-- Диагноз и анамнез -->
             <div class="card mb-4">
                 <div class="card-header" id="diagnosisHeading" style="cursor: pointer;"
                      onclick="togglePanel('diagnosisPanel', 'diagnosisIcon')">
@@ -63,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Опрос по системам органов -->
             <div class="card mb-4">
                 <div class="card-header" id="systemsHeading" style="cursor: pointer;"
                      onclick="togglePanel('systemsPanel', 'systemsIcon')">
@@ -152,13 +162,43 @@
     </div>
 
     <style>
-        .card-header[data-toggle="collapse"] {
-            cursor: pointer;
-            transition: background-color 0.3s;
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
-        .card-header[data-toggle="collapse"]:hover {
-            background-color: #f8f9fa;
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            height: 150px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-actions .btn {
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .patient-info dt {
+            color: #6c757d;
+            font-weight: 500;
         }
 
         pre {
@@ -184,7 +224,6 @@
             }
         }
 
-        // Автоматически открываем панель диагноза при загрузке
         document.addEventListener('DOMContentLoaded', function () {
             togglePanel('diagnosisPanel', 'diagnosisIcon');
         });

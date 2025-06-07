@@ -1,39 +1,142 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Отделение: {{ department.name }}</h2>
-    <a href="{% url 'home' %}" class="btn btn-secondary">Назад</a>
-</div>
+    <div class="header-container mb-4">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="logo">
+            </a>
+            <div class="header-text">
+                <h2 class="mb-1">Отделение: {{ department.name }}</h2>
+                <h4 class="text-muted">{{ department.code }}</h4>
+            </div>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Назад</a>
+    </div>
 
-<div class="card">
-    <div class="card-header">Пациенты в отделении</div>
-    <div class="card-body p-0">
-        {% if patients %}
-        <div class="list-group list-group-flush">
-            {% for patient in patients %}
-            <a href="{% url 'patient_detail' patient.id %}"
-               class="list-group-item list-group-item-action">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</strong>
-                        <div class="text-muted small">
-                            СНИЛС: {{ patient.formatted_snils }} |
-                            Возраст: {{ patient.birth_date|timesince }}
-                        </div>
-                    </div>
-                    <span class="badge badge-primary">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0 font-weight-bold">Пациенты в отделении</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if patients %}
+                <div class="list-group list-group-flush">
+                    {% for patient in patients %}
+                        <a href="{% url 'patient_detail' patient.id %}"
+                           class="list-group-item list-group-item-action hover-highlight">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="patient-info">
+                                    <strong>{{ patient.last_name }} {{ patient.first_name }} {{ patient.middle_name }}</strong>
+                                    <div class="text-muted small mt-1">
+                                        <span class="info-item">СНИЛС: {{ patient.formatted_snils }}</span>
+                                        <span class="info-separator">|</span>
+                                        <span class="info-item">Возраст: {{ patient.birth_date|age_in_years }}</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-pill badge-primary room-badge">
                         Палата: {{ patient.admissions.first.room_number }}
                     </span>
+                            </div>
+                        </a>
+                    {% endfor %}
                 </div>
-            </a>
-            {% endfor %}
+            {% else %}
+                <div class="p-4 text-center text-muted no-patients">
+                    <i class="fas fa-user-slash fa-2x mb-3"></i>
+                    <p class="h5">В отделении нет пациентов</p>
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="p-4 text-center text-muted">
-            В отделении нет пациентов
-        </div>
-        {% endif %}
     </div>
-</div>
+
+    <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            height: 150px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hover-highlight:hover {
+            background-color: #f8f9fa;
+        }
+
+        .patient-info {
+            flex: 1;
+        }
+
+        .info-item {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .info-separator {
+            color: #dee2e6;
+            margin: 0 5px;
+        }
+
+        .room-badge {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .no-patients {
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                height: 60px;
+            }
+
+            .info-item, .info-separator {
+                display: block;
+                margin: 2px 0;
+            }
+
+            .info-separator {
+                display: none;
+            }
+        }
+    </style>
 {% endblock %}

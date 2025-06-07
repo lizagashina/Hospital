@@ -1,4 +1,5 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
 
 {% block content %}
     {% if not user.hospital %}
@@ -9,21 +10,34 @@
             <a href="{% url 'logout' %}" class="btn btn-secondary mt-3">Выйти</a>
         </div>
     {% else %}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Добро пожаловать, {{ user.full_name }}!</h2>
+        <div class="header-container mb-4">
+            <div class="header-content">
+                <a href="{% url 'home' %}" class="logo-link">
+                    <img src="{% static 'Journal/images/logo.png' %}" alt="Logo" class="logo">
+                </a>
+                <div class="header-text">
+                    <h2 class="mb-1">Добро пожаловать, {{ user.full_name }}!</h2>
+                    <h4 class="text-muted">"{{ user.hospital.name }}"</h4>
+                </div>
+            </div>
             <a href="{% url 'logout' %}" class="btn btn-danger">Выход</a>
         </div>
+
 
         <h3 class="mb-3">Отделения больницы "{{ user.hospital.name }}":</h3>
         {% if departments %}
             <div class="list-group">
                 {% for department in departments %}
-                    <a href="{% url 'department' department.id %}" class="list-group-item list-group-item-action">
-                        {{ department.name }} ({{ department.code }})
-                        {% if department not in user.departments.all %}
+                    {% if department in user.departments.all %}
+                        <a href="{% url 'department' department.id %}" class="list-group-item list-group-item-action">
+                            {{ department.name }} ({{ department.code }})
+                        </a>
+                    {% else %}
+                        <a href="#" class="list-group-item list-group-item-action unavailable-department">
+                            {{ department.name }} ({{ department.code }})
                             <span class="badge badge-secondary float-right">Не назначено вам</span>
-                        {% endif %}
-                    </a>
+                        </a>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% else %}
@@ -31,7 +45,99 @@
         {% endif %}
 
         <div class="mt-4">
-            <a href="{% url 'patients' %}" class="btn btn-primary btn-lg">Работа с пациентами</a>
+            <a href="{% url 'patients' %}" class="btn btn-primary btn-lg">База данных пациентов</a>
         </div>
+
+        <div id="popup" class="toast-popup">
+            У вас нет доступа к этому отделению.
+        </div>
+
+        <style>
+            .header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 30px;
+            }
+
+            .header-content {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .logo {
+                height: 150px;
+                width: auto;
+                transition: transform 0.3s ease;
+            }
+
+            .logo:hover {
+                transform: scale(1.05);
+            }
+
+            .header-text {
+                display: flex;
+                padding: 8px 16px;
+                flex-direction: column;
+            }
+
+            @media (max-width: 768px) {
+                .header-container {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+
+                .header-content {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .logo {
+                    height: 60px;
+                }
+            }
+
+            .toast-popup {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #17a2b8;
+                color: #ffffff;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                z-index: 1050;
+                opacity: 0;
+                transition: opacity 0.5s ease-in-out;
+                pointer-events: none;
+            }
+
+            .toast-popup.show {
+                opacity: 1;
+            }
+        </style>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const links = document.querySelectorAll(".unavailable-department");
+                const popup = document.getElementById("popup");
+
+                links.forEach(link => {
+                    link.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        popup.classList.add("show");
+
+                        setTimeout(() => {
+                            popup.classList.remove("show");
+                        }, 3000);
+                    });
+                });
+            });
+        </script>
     {% endif %}
 {% endblock %}

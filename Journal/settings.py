@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / '.env')  # Р—Р°РіСЂСѓР·РєР° .env
+load_dotenv(BASE_DIR / '.env')
 
 GIGDATA_API_KEY = os.getenv('GIGDATA_API_KEY')
 
@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'HospitalJournal.apps.HospitaljournalConfig',
     'accounts',
     'crispy_forms',
     'crispy_bootstrap4'

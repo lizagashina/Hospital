@@ -11,7 +11,6 @@ class CustomUserDepartmentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Фильтруем отделения только для текущей больницы пользователя
         if 'departments' in self.fields:
             if self.instance and self.instance.hospital:
                 self.fields['departments'].queryset = Department.objects.filter(
