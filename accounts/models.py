@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.utils import timezone
 from django.utils.text import slugify
 from django.contrib.auth.models import BaseUserManager
 from transliterate import translit
@@ -233,7 +234,7 @@ class Admission(models.Model):
     )
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='admissions')
-    admission_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата поступления')
+    admission_date = models.DateTimeField(default=timezone.now, verbose_name='Дата поступления')
     discharge_date = models.DateTimeField(null=True, blank=True, verbose_name='Дата выписки')
     severity = models.CharField(max_length=10, blank=True, choices=SEVERITY_CHOICES, verbose_name='Состояние')
     mind = models.CharField(max_length=10, blank=True, choices=MIND_CHOICES, verbose_name='Сознание')
@@ -314,4 +315,4 @@ class HealthNote(models.Model):
     valueLow = models.CharField(max_length=3, blank=True, null=True)
     hr_value = models.PositiveIntegerField(blank=True, null=True)
     temperature_value = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)

@@ -1,7 +1,83 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Department, Patient, Admission, Hospital
+from .models import CustomUser, Department, Patient, Admission, Hospital, HealthNote
+
+
+@admin.register(HealthNote)
+class HealthNoteAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'get_patient',
+        'get_admission',
+        'note_type_display',
+        'created_at',
+        'short_text',
+        'get_vitals'
+    )
+    list_filter = ('note_type', 'created_at')
+    search_fields = (
+        'text',
+        'admission__patient__last_name',
+        'admission__patient__first_name',
+        'admission__patient__middle_name'
+    )
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('admission', 'note_type', 'created_at')
+        }),
+        ('Содержание записи', {
+            'fields': ('text',)
+        }),
+        ('Показатели состояния (если тип "Состояние пациента")', {
+            'fields': (
+                'valueHigh',
+                'valueLow',
+                'hr_value',
+                'temperature_value'
+            ),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+    def get_patient(self, obj):
+        return obj.admission.patient
+
+    get_patient.short_description = 'Пациент'
+    get_patient.admin_order_field = 'admission__patient'
+
+    def get_admission(self, obj):
+        return f"{obj.admission.admission_date.date()}"
+
+    get_admission.short_description = 'Поступление'
+    get_admission.admin_order_field = 'admission__admission_date'
+
+    def note_type_display(self, obj):
+        return dict(HealthNote.NOTE_TYPE_CHOICES).get(obj.note_type, obj.note_type)
+
+    note_type_display.short_description = 'Тип записи'
+
+    def short_text(self, obj):
+        return obj.text[:50] + '...' if obj.text and len(obj.text) > 50 else obj.text or '-'
+
+    short_text.short_description = 'Текст'
+
+    def get_vitals(self, obj):
+        if obj.note_type == 'info':
+            return f"АД: {obj.valueHigh}/{obj.valueLow}, Пульс: {obj.hr_value}, Темп: {obj.temperature_value}"
+        return '-'
+
+    get_vitals.short_description = 'Показатели'
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(admission__patient__hospital=request.user.hospital)
 
 
 class CustomUserDepartmentForm(forms.ModelForm):
